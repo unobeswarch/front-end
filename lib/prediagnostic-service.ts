@@ -76,29 +76,6 @@ export class PreDiagnosticService {
     }
   }
 
-  /**
-   * ❌ COMENTADO: El backend no tiene getAllPreDiagnostics, solo getPreDiagnostic(id)
-   * Obtiene todos los prediagnósticos disponibles
-   * @returns Promise con la lista de prediagnósticos
-   */
-  /*
-  static async getAllPreDiagnostics(): Promise<PreDiagnostic[]> {
-    try {
-      const data = await GraphQLClient.query<GetAllPreDiagnosticsResponse>(
-        GET_ALL_PREDIAGNOSTICS
-      );
-      
-      if (!data) {
-        throw new Error('No se recibieron datos del servidor');
-      }
-      
-      return data.getAllPreDiagnostics;
-    } catch (error) {
-      console.error('Error al obtener todos los prediagnósticos:', error);
-      throw new Error('No se pudieron obtener los prediagnósticos. Verifica tu conexión.');
-    }
-  }
-  */
 
   /**
    * Formatea la fecha para mostrar en la interfaz
