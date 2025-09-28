@@ -11,60 +11,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Activity, LogOut, Settings, User, Stethoscope, LayoutDashboard, FileText } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Activity, LogOut, Settings, User, Stethoscope } from "lucide-react"
 
 export function DoctorHeader() {
   const { user, logout } = useAuth()
-  const pathname = usePathname()
 
   const handleLogout = () => {
     logout()
   }
 
-  const navigationItems = [
-    {
-      href: "/doctor/dashboard",
-      label: "Dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      href: "/doctor/casos-pendientes",
-      label: "Casos Pendientes",
-      icon: FileText,
-    },
-  ]
-
   return (
     <header className="border-b border-border bg-card">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Activity className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-card-foreground">NeumoDiag</h1>
-              <span className="text-sm text-muted-foreground ml-2 flex items-center gap-1">
-                <Stethoscope className="h-4 w-4" />
-                Doctor Portal
-              </span>
-            </div>
-
-            <nav className="hidden md:flex items-center gap-1">
-              {navigationItems.map((item) => {
-                const Icon = item.icon
-                const isActive = pathname === item.href
-
-                return (
-                  <Button key={item.href} variant={isActive ? "secondary" : "ghost"} size="sm" asChild>
-                    <Link href={item.href} className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  </Button>
-                )
-              })}
-            </nav>
+          <div className="flex items-center gap-2">
+            <Activity className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl font-bold text-card-foreground">NeumoDiag</h1>
+            <span className="text-sm text-muted-foreground ml-2 flex items-center gap-1">
+              <Stethoscope className="h-4 w-4" />
+              Doctor Portal
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -92,22 +58,6 @@ export function DoctorHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-
-                <div className="md:hidden">
-                  {navigationItems.map((item) => {
-                    const Icon = item.icon
-                    return (
-                      <DropdownMenuItem key={item.href} asChild>
-                        <Link href={item.href} className="flex items-center">
-                          <Icon className="mr-2 h-4 w-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    )
-                  })}
-                  <DropdownMenuSeparator />
-                </div>
-
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
