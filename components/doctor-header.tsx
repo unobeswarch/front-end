@@ -11,7 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Activity, LogOut, Settings, User, Stethoscope } from "lucide-react"
+import { Activity, LogOut, Settings, User, Stethoscope, FileText } from "lucide-react"
+import Link from "next/link"
 
 export function DoctorHeader() {
   const { user, logout } = useAuth()
@@ -32,6 +33,21 @@ export function DoctorHeader() {
               Doctor Portal
             </span>
           </div>
+
+          <nav className="hidden md:flex items-center gap-4">
+            <Button variant="ghost" asChild>
+              <Link href="/doctor/dashboard" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/doctor/casos-pendientes" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Casos Pendientes
+              </Link>
+            </Button>
+          </nav>
 
           <div className="flex items-center gap-4">
             <DropdownMenu>
@@ -67,6 +83,19 @@ export function DoctorHeader() {
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="md:hidden">
+                  <Link href="/doctor/dashboard">
+                    <Activity className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="md:hidden">
+                  <Link href="/doctor/casos-pendientes">
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>Casos Pendientes</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="md:hidden" />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>

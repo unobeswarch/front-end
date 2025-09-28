@@ -35,4 +35,3 @@ export interface PreDiagnostic {
 export interface GetPreDiagnosticResponse {
   getPreDiagnostic: PreDiagnostic;
 }
-
