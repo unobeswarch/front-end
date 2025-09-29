@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { FileImage, Search, Calendar, Eye } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface RadiographyRecord {
   id: string
@@ -27,6 +28,7 @@ interface RadiographyHistoryProps {
 
 export function RadiographyHistory({ records, onSelectRecord }: RadiographyHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("")
+  const router = useRouter()
 
   const filteredRecords = records.filter(
     (record) =>
@@ -125,7 +127,12 @@ export function RadiographyHistory({ records, onSelectRecord }: RadiographyHisto
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => router.push(`/patient/radiograph/${record.id}`)}
+                      title="Ver detalles completos (HU7)"
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
