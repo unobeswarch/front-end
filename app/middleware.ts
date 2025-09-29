@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
   // If user is on a public path and has a token, redirect to appropriate dashboard
   if (isPublicPath && token) {
     const userRole = request.cookies.get("user-role")?.value
-    if (userRole === "patient") {
+    if (userRole === "paciente") {
       return NextResponse.redirect(new URL("/patient/dashboard", request.nextUrl))
     } else if (userRole === "doctor") {
       return NextResponse.redirect(new URL("/doctor/dashboard", request.nextUrl))
