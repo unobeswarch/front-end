@@ -12,14 +12,14 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Activity className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">NeumoDiag</h1>
+              <h1 className="text-2xl font-bold text-foreground">NeumoDiagnostics</h1>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" asChild>
-                <Link href="/login">Login</Link>
+                <Link href="/login">Iniciar sesión</Link>
               </Button>
               <Button asChild>
-                <Link href="/register">Register</Link>
+                <Link href="/register">Registrarse</Link>
               </Button>
             </div>
           </div>
@@ -30,38 +30,22 @@ export default function HomePage() {
       <main className="container mx-auto px-6 py-16">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4 text-balance">
-            Professional Radiography Management System
+            Sistema de gestión y predicción de neumonía a partir de radiografías
           </h2>
           <p className="text-xl text-muted-foreground mb-8 text-pretty max-w-2xl mx-auto">
-            Streamline your medical imaging workflow with our secure, AI-powered platform designed for healthcare
-            professionals and patients.
+            Mejore su capacidad y velocidad de predicción de neumonia por medio de nuestro modelo de IA
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" asChild>
-              <Link href="/register">Get Started</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <Shield className="h-12 w-12 text-primary mb-4" />
-              <CardTitle className="text-card-foreground">Secure & Compliant</CardTitle>
-              <CardDescription>HIPAA-compliant platform ensuring patient data privacy and security</CardDescription>
-            </CardHeader>
-          </Card>
+        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-16">
 
           <Card className="bg-card border-border">
             <CardHeader>
               <Users className="h-12 w-12 text-primary mb-4" />
-              <CardTitle className="text-card-foreground">Multi-Role Access</CardTitle>
+              <CardTitle className="text-card-foreground">Acceso para distintos roles</CardTitle>
               <CardDescription>
-                Separate dashboards for patients and doctors with role-based permissions
+                Los pacientes podrán subir sus radiografias, mientras que los doctores, por medio de un modelo de IA, podrán realizar predicciones mucho mas precisas acerca de la existencia de neumonía
               </CardDescription>
             </CardHeader>
           </Card>
@@ -69,26 +53,9 @@ export default function HomePage() {
           <Card className="bg-card border-border">
             <CardHeader>
               <FileText className="h-12 w-12 text-primary mb-4" />
-              <CardTitle className="text-card-foreground">AI-Powered Analysis</CardTitle>
-              <CardDescription>Advanced AI diagnostics with doctor validation for accurate results</CardDescription>
+              <CardTitle className="text-card-foreground">Prediagnosticos realizados por IA</CardTitle>
+              <CardDescription>Nuestro modelo de IA realizará prediagnosticos de las radiografías los cuales posteriormente deberán ser confirmados por un doctor</CardDescription>
             </CardHeader>
-          </Card>
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center">
-          <Card className="bg-card border-border max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl text-card-foreground">Ready to get started?</CardTitle>
-              <CardDescription className="text-lg">
-                Join healthcare professionals who trust NeumoDiag for their radiography management needs.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button size="lg" className="w-full sm:w-auto" asChild>
-                <Link href="/register">Create Your Account</Link>
-              </Button>
-            </CardContent>
           </Card>
         </div>
       </main>

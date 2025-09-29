@@ -27,7 +27,7 @@ export function DoctorHeader() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-card-foreground">NeumoDiag</h1>
+            <h1 className="text-2xl font-bold text-card-foreground">NeumoDiagnostics</h1>
             <span className="text-sm text-muted-foreground ml-2 flex items-center gap-1">
               <Stethoscope className="h-4 w-4" />
               Doctor Portal
