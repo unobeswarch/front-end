@@ -9,8 +9,8 @@ import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "NeumoDiag - Medical Radiography Management",
-  description: "Professional radiography management system for patients and doctors",
+  title: "NeumoDiagnostics",
+  description: "Sistema de gestión y predicción de neumonía a partir de radiografías",
   generator: "v0.app",
 }
 
