@@ -7,13 +7,13 @@ interface User {
   id: string
   name: string
   email: string
-  role: "patient" | "doctor"
+  role: "paciente" | "doctor"
   avatar?: string
 }
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string, role: "patient" | "doctor") => Promise<boolean>
+  login: (email: string, password: string) => Promise<User | null>
   register: (userData: any) => Promise<boolean>
   logout: () => void
   isLoading: boolean
@@ -23,87 +23,124 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Check for existing session on mount
-    const token = document.cookie.includes("auth-token")
-    const userRole = document.cookie.includes("user-role=patient")
-      ? "patient"
+    if (user) return
+
+    const hasToken = document.cookie.includes("auth-token")
+    const userRole = document.cookie.includes("user-role=paciente")
+      ? "paciente"
       : document.cookie.includes("user-role=doctor")
         ? "doctor"
         : null
+    if (hasToken && userRole) {
+      const token = document.cookie.split("; ").find(row => row.startsWith("auth-token="))?.split("=")[1]
 
-    if (token && userRole) {
-      // In a real app, you'd validate the token with your backend
-      setUser({
-        id: "1",
-        name: userRole === "patient" ? "John Doe" : "Dr. Sarah Johnson",
-        email: userRole === "patient" ? "john@example.com" : "sarah@hospital.com",
-        role: userRole,
-        avatar: userRole === "patient" ? "/patient-avatar.png" : "/doctor-avatar.png",
+       fetch("http://localhost:8080/validation", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       })
+        .then(res => {
+          if (!res.ok) throw new Error("Token inválido o expirado")
+          return res.json()
+        })
+        .then(data => {
+          setUser({
+            id: data.UserID,
+            name: data.Name,
+            email: data.Email,
+            role: data.Role,
+            avatar: data.Role === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
+        })
+      })
+      .catch(err => {
+        console.error(err)
+      })    
     }
-    setIsLoading(false)
   }, [])
 
-  const login = async (email: string, password: string, role: "patient" | "doctor"): Promise<boolean> => {
+  const login = async (correo: string, contrasena: string): Promise<User | null> => {
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+    const response = await fetch("http://localhost:8080/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correo, contrasena }),
+    })
 
-    // In a real app, you'd validate credentials with your backend
-    if (password === "password") {
+    if (!response.ok) {
+      setIsLoading(false)
+      return null
+    }
+
+    const data = await response.json()
+
       const userData = {
-        id: "1",
-        name: role === "patient" ? "John Doe" : "Dr. Sarah Johnson",
-        email,
-        role,
-        avatar: role === "patient" ? "/patient-avatar.png" : "/doctor-avatar.png",
+        id: data.id,
+        email: correo,
+        name: data.nombre,
+        role: data.rol,
+        avatar: data.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
       }
 
       setUser(userData)
 
-      // Set cookies (in a real app, these would be secure HTTP-only cookies)
-      document.cookie = "auth-token=mock-token; path=/"
-      document.cookie = `user-role=${role}; path=/`
+      document.cookie = `auth-token=${data.token}; path=/`
+      document.cookie = `user-role=${data.rol}; path=/`
 
       setIsLoading(false)
-      return true
-    }
+      return userData
 
-    setIsLoading(false)
-    return false
+    } catch(error) {
+      setIsLoading(false)
+      return null
+    }
   }
 
   const register = async (userData: any): Promise<boolean> => {
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const responseRegister = await fetch("http://localhost:8080/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      })
+
+    if (!responseRegister.ok) {
+      setIsLoading(false)
+      return false
+    }
+
+    const registerData = await responseRegister.json()
 
     const newUser = {
-      id: "1",
-      name: userData.name,
-      email: userData.email,
-      role: userData.role,
-      avatar: userData.role === "patient" ? "/patient-avatar.png" : "/doctor-avatar.png",
+      id: registerData.id,
+      name: registerData.nombre_completo,
+      email: registerData.correo,
+      role: registerData.rol,
+      avatar: registerData.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
     }
 
     setUser(newUser)
 
-    // Set cookies
-    document.cookie = "auth-token=mock-token; path=/"
-    document.cookie = `user-role=${userData.role}; path=/`
-
     setIsLoading(false)
     return true
+
+  } catch (error) {
+    console.error("Error en registro:", error)
+    setIsLoading(false)
+    return false
   }
+}
 
   const logout = () => {
     setUser(null)
-    // Clear cookies
     document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
     document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
     window.location.href = "/login"

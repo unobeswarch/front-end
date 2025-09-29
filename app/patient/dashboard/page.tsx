@@ -10,14 +10,28 @@ import { UploadRadiography } from "@/components/upload-radiography"
 import { RadiographyHistory } from "@/components/radiography-history"
 import { RadiographyDetail } from "@/components/radiography-detail"
 
+// Type definition for radiography records
+interface RadiographyRecord {
+  id: string
+  uploadDate: string
+  processedDate: string | null
+  validatedDate: string | null
+  status: "uploaded" | "processed" | "validated"
+  patientId: string
+  imageUrl: string
+  doctorReport: string | null
+  doctorName: string | null
+  aiDiagnosis: string | null
+}
+
 // Mock data for radiography records
-const mockRecords = [
+const mockRecords: RadiographyRecord[] = [
   {
     id: "1",
     uploadDate: "2024-01-15",
     processedDate: "2024-01-16",
     validatedDate: "2024-01-17",
-    status: "validated" as const,
+    status: "validated",
     patientId: "P001",
     imageUrl: "/chest-x-ray-radiography.jpg",
     doctorReport:
@@ -30,7 +44,7 @@ const mockRecords = [
     uploadDate: "2024-01-10",
     processedDate: "2024-01-11",
     validatedDate: null,
-    status: "processed" as const,
+    status: "processed",
     patientId: "P001",
     imageUrl: "/knee-x-ray-radiography.jpg",
     doctorReport: null,
@@ -42,7 +56,7 @@ const mockRecords = [
     uploadDate: "2024-01-08",
     processedDate: null,
     validatedDate: null,
-    status: "uploaded" as const,
+    status: "uploaded",
     patientId: "P001",
     imageUrl: "/spine-x-ray-radiography.jpg",
     doctorReport: null,
@@ -52,8 +66,8 @@ const mockRecords = [
 ]
 
 export default function PatientDashboard() {
-  const [selectedRecord, setSelectedRecord] = useState<(typeof mockRecords)[0] | null>(null)
-  const [records, setRecords] = useState(mockRecords)
+  const [selectedRecord, setSelectedRecord] = useState<RadiographyRecord | null>(null)
+  const [records, setRecords] = useState<RadiographyRecord[]>(mockRecords)
 
   const handleUploadSuccess = (newRecord: any) => {
     setRecords([newRecord, ...records])
@@ -69,15 +83,15 @@ export default function PatientDashboard() {
 
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Patient Dashboard</h1>
-          <p className="text-muted-foreground">Manage your radiography records and view results</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard del paciente</h1>
+          <p className="text-muted-foreground">Gestione sus radiografias y resultados</p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="upload">Upload</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="overview">General</TabsTrigger>
+            <TabsTrigger value="upload">Subir radiografía</TabsTrigger>
+            <TabsTrigger value="history">Historial</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -85,38 +99,38 @@ export default function PatientDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Total Records</CardTitle>
+                  <CardTitle className="text-sm font-medium text-card-foreground">Número de registros</CardTitle>
                   <FileImage className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-card-foreground">{records.length}</div>
-                  <p className="text-xs text-muted-foreground">Radiography records</p>
+                  <p className="text-xs text-muted-foreground">Radiografías</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Validated</CardTitle>
+                  <CardTitle className="text-sm font-medium text-card-foreground">Registros validados</CardTitle>
                   <CheckCircle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-card-foreground">
                     {records.filter((r) => r.status === "validated").length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Doctor approved</p>
+                  <p className="text-xs text-muted-foreground">Aprobados por un doctor</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Pending</CardTitle>
+                  <CardTitle className="text-sm font-medium text-card-foreground">Registros pendientes</CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-card-foreground">
                     {records.filter((r) => r.status !== "validated").length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Awaiting review</p>
+                  <p className="text-xs text-muted-foreground">En espera de revisión</p>
                 </CardContent>
               </Card>
             </div>
@@ -124,8 +138,8 @@ export default function PatientDashboard() {
             {/* Recent Records */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Recent Records</CardTitle>
-                <CardDescription>Your latest radiography submissions</CardDescription>
+                <CardTitle className="text-card-foreground">Registros recientes</CardTitle>
+                <CardDescription>Tus radiografías más recientes</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -140,9 +154,9 @@ export default function PatientDashboard() {
                           <FileImage className="h-6 w-6 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="font-medium text-card-foreground">Record #{record.id}</p>
+                          <p className="font-medium text-card-foreground">Registro #{record.id}</p>
                           <p className="text-sm text-muted-foreground">
-                            Uploaded {new Date(record.uploadDate).toLocaleDateString()}
+                            Subido {new Date(record.uploadDate).toLocaleDateString()}
                           </p>
                         </div>
                       </div>

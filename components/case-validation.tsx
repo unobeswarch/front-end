@@ -179,7 +179,7 @@ export function CaseValidation({ case: caseData, onBack, onValidate }: CaseValid
                   {/* AI Agreement */}
                   <div className="space-y-3">
                     <Label className="text-card-foreground font-medium">Do you agree with the AI diagnosis?</Label>
-                    <RadioGroup value={aiAgreement} onValueChange={setAiAgreement}>
+                    <RadioGroup value={aiAgreement} onValueChange={(value) => setAiAgreement(value as "agree" | "disagree" | "")}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="agree" id="agree" />
                         <Label htmlFor="agree" className="flex items-center gap-2 cursor-pointer">

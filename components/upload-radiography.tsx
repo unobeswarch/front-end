@@ -18,7 +18,6 @@ export function UploadRadiography({ onUploadSuccess }: UploadRadiographyProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [notes, setNotes] = useState("")
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -54,34 +53,54 @@ export function UploadRadiography({ onUploadSuccess }: UploadRadiographyProps) {
 
     setIsUploading(true)
 
-    // Simulate upload process
-    setTimeout(() => {
-      const newRecord = {
-        id: Date.now().toString(),
-        uploadDate: new Date().toISOString().split("T")[0],
-        processedDate: null,
-        validatedDate: null,
-        status: "uploaded" as const,
-        patientId: "P001",
-        imageUrl: "/medical-radiography.jpg",
-        doctorReport: null,
-        doctorName: null,
-        aiDiagnosis: null,
-        notes,
-      }
+    const size = selectedFile.size / 1024 / 1024
+    console.log(size)
+    if (size > 10) {
+      alert("El tamano de la imagen excede el limite")
+    }
 
-      onUploadSuccess(newRecord)
+    try {
+      const formData = new FormData()
+
+      formData.append(
+        "operations",
+        JSON.stringify({
+          query: `mutation uploadImage($file: Upload!) {
+            uploadImage(imagen: $file)
+          }`,
+          variables: { file: null },
+        })
+      )
+
+      formData.append("map", JSON.stringify({ "0": ["variables.file"] }))
+      formData.append("0", selectedFile)
+
+      const token = document.cookie.split("; ").find((row) => row.startsWith("auth-token="))?.split("=")[1]
+
+      const response = await fetch("http://localhost:8080/query", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }) 
+
+      const result = await response.json()
+
+      if (result.data?.uploadImage) {
+        alert("Tu radiografia ha sido subida")
+      }
+    } catch (error) {
+      alert("La imagen no pudo ser subida")
+    }
       setSelectedFile(null)
-      setNotes("")
       setIsUploading(false)
-    }, 2000)
   }
 
   return (
     <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="text-card-foreground">Upload Radiography</CardTitle>
-        <CardDescription>Upload your radiography images for AI analysis and doctor review</CardDescription>
+        <CardTitle className="text-card-foreground">Subir radiografía</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* File Upload Area */}
@@ -118,34 +137,19 @@ export function UploadRadiography({ onUploadSuccess }: UploadRadiographyProps) {
                 <Upload className="h-12 w-12 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-lg font-medium text-card-foreground">Drop your radiography here</p>
-                <p className="text-sm text-muted-foreground">or click to browse files</p>
+                <p className="text-lg font-medium text-card-foreground">Arrastra tu radiografía aquí</p>
+                <p className="text-sm text-muted-foreground">o haz click en Buscar imagen</p>
               </div>
               <div>
                 <Input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" id="file-upload" />
                 <Label htmlFor="file-upload">
                   <Button variant="outline" className="cursor-pointer bg-transparent" asChild>
-                    <span>Browse Files</span>
+                    <span>Buscar imagen</span>
                   </Button>
                 </Label>
               </div>
             </div>
           )}
-        </div>
-
-        {/* Notes Section */}
-        <div className="space-y-2">
-          <Label htmlFor="notes" className="text-card-foreground">
-            Additional Notes (Optional)
-          </Label>
-          <Textarea
-            id="notes"
-            placeholder="Add any relevant information about symptoms, pain location, etc."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="bg-background border-border text-foreground"
-            rows={3}
-          />
         </div>
 
         {/* Upload Button */}
@@ -155,9 +159,9 @@ export function UploadRadiography({ onUploadSuccess }: UploadRadiographyProps) {
 
         {/* Info */}
         <div className="text-sm text-muted-foreground space-y-1">
-          <p>• Supported formats: JPEG, PNG, DICOM</p>
-          <p>• Maximum file size: 50MB</p>
-          <p>• Your images will be processed by AI and reviewed by qualified doctors</p>
+          <p>• Formato necesario: JPG</p>
+          <p>• Tamaño máximo del archivo: 10MB</p>
+          <p>• Tus imagenes serán prediagnosticadas por un modelo de IA y luego serán validadas por un doctor</p>
         </div>
       </CardContent>
     </Card>

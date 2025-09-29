@@ -18,13 +18,13 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
     role: "",
-    licenseNumber: "",
+    age: 0,
+    identification: "",
     agreeToTerms: false,
   })
   const { register, isLoading } = useAuth()
@@ -33,25 +33,25 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match")
+      alert("Las contraseña no coinciden")
       return
     }
 
     const userData = {
-      name: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      role: formData.role,
-      licenseNumber: formData.licenseNumber,
+      nombre_completo: formData.name,
+      edad: formData.age,
+      rol: formData.role,
+      identificacion: formData.identification,
+      correo: formData.email,
+      contrasena: formData.password,
+      acepta_tratamiento_datos: formData.agreeToTerms,
     }
 
     const success = await register(userData)
 
     if (success) {
-      if (formData.role === "patient") {
-        router.push("/patient/dashboard")
-      } else if (formData.role === "doctor") {
-        router.push("/doctor/dashboard")
-      }
+      router.push("/login")
+      alert("Registro completado. Por favor, inicie sesion")
     }
   }
 
@@ -62,104 +62,102 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Activity className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">NeumoDiag</span>
+            <span className="text-2xl font-bold text-foreground">NeumoDiagnostics</span>
           </Link>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-          <p className="text-muted-foreground">Join our medical platform today</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Crear cuenta</h1>
         </div>
 
         {/* Registration Form */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-card-foreground">Register</CardTitle>
-            <CardDescription>Create your account to get started</CardDescription>
+            <CardTitle className="text-card-foreground">Registro</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-card-foreground">
-                    First Name
+                    Nombre completo
                   </Label>
                   <Input
-                    id="firstName"
-                    placeholder="John"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    id="name"
+                    placeholder="Jorge Martinez"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                     className="bg-background border-border text-foreground"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-card-foreground">
-                    Last Name
-                  </Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Doe"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    required
-                    className="bg-background border-border text-foreground"
-                  />
-                </div>
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-card-foreground">
-                  Email
+                  Correo electronico
                 </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="john.doe@hospital.com"
+                  placeholder="jorge@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                   className="bg-background border-border text-foreground"
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role" className="text-card-foreground">
-                  Role
-                </Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                  <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="patient">Patient</SelectItem>
-                    <SelectItem value="doctor">Doctor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.role === "doctor" && (
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="licenseNumber" className="text-card-foreground">
-                    Medical License Number
+                    <Label htmlFor="role" className="text-card-foreground">
+                      Rol
+                    </Label>
+                    <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                      <SelectTrigger className="bg-background border-border text-foreground">
+                        <SelectValue placeholder="Seleccione su rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paciente">Paciente</SelectItem>
+                        <SelectItem value="doctor">Doctor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                  <Label htmlFor="email" className="text-card-foreground">
+                    Edad
                   </Label>
                   <Input
-                    id="licenseNumber"
-                    placeholder="Enter your license number"
-                    value={formData.licenseNumber}
-                    onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                    id="age"
+                    type="number"
+                    placeholder="Ingrese su edad"
+                    min={0}
+                    max={120}
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: Number(e.target.value)})}
                     required
                     className="bg-background border-border text-foreground"
                   />
                 </div>
-              )}
+              </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-card-foreground">
+                    Identificacion
+                  </Label>
+                  <Input
+                    id="identification"
+                    placeholder="Ingrese su identificacion"
+                    value={formData.identification}
+                    onChange={(e) => setFormData({ ...formData, identification: e.target.value})}
+                    required
+                    className="bg-background border-border text-foreground"
+                  />
+                </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-card-foreground">
-                  Password
+                  Contraseña
                 </Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
+                    placeholder="Escriba su contraseña"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
@@ -183,13 +181,13 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-card-foreground">
-                  Confirm Password
+                  Confirmar contraseña
                 </Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
+                    placeholder="Escriba su contraseña nuevamente"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     required
@@ -218,27 +216,27 @@ export default function RegisterPage() {
                   onCheckedChange={(checked) => setFormData({ ...formData, agreeToTerms: checked as boolean })}
                 />
                 <Label htmlFor="terms" className="text-sm text-card-foreground">
-                  I agree to the{" "}
+                  Acepto los{" "}
                   <Link href="/terms" className="text-primary hover:underline">
-                    Terms of Service
+                    Terminos de servicio
                   </Link>{" "}
-                  and{" "}
+                  y la{" "}
                   <Link href="/privacy" className="text-primary hover:underline">
-                    Privacy Policy
+                    Politica de privacidad
                   </Link>
                 </Label>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading || !formData.agreeToTerms}>
-                {isLoading ? "Creating Account..." : "Create Account"}
+                {isLoading ? "Creando cuenta..." : "Crear cuenta"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Already have an account?{" "}
+                ¿Ya tienes una cuenta?{" "}
                 <Link href="/login" className="text-primary hover:underline">
-                  Sign in here
+                  Inicia sesion aqui
                 </Link>
               </p>
             </div>

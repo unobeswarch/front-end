@@ -34,3 +34,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Debug/Testing pages (development only)
+/app/connection-test/
+/app/debug/
+/app/test-ids/
+/app/test/
+/components/test-connection.tsx
+INTEGRATION_README.md
