@@ -25,8 +25,8 @@ export function PatientHeader() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-card-foreground">NeumoDiag</h1>
-            <span className="text-sm text-muted-foreground ml-2">Patient Portal</span>
+            <h1 className="text-2xl font-bold text-card-foreground">NeumoDiagnostics</h1>
+            <span className="text-sm text-muted-foreground ml-2">Portal del paciente</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -52,18 +52,10 @@ export function PatientHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>Cerrar sesion</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
