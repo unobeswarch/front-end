@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+### HU5 - Medical Diagnostic Interface
+
+Medical diagnostic functionality allowing doctors to approve/reject AI model results with detailed medical comments.
+
+**Interface implemented:**
+- Approval/rejection checkboxes for AI diagnosis
+- Medical comment field with validation (min 10 chars)
+- GraphQL integration with createDiagnostic mutation
+- Toast notifications and automatic redirection to pending cases
+- Robust error handling with development fallback
+
+**Access:** `/doctor/cases/{prediagnostic_id}`
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
