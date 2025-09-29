@@ -50,11 +50,8 @@ export default function RegisterPage() {
     const success = await register(userData)
 
     if (success) {
-      if (formData.role === "paciente") {
-        router.push("/patient/dashboard")
-      } else if (formData.role === "doctor") {
-        router.push("/doctor/dashboard")
-      }
+      router.push("/login")
+      alert("Registro completado. Por favor, inicie sesion")
     }
   }
 

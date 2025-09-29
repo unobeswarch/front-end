@@ -18,24 +18,23 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "",
   })
   const { login, isLoading } = useAuth()
   const router = useRouter()
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const user = await login(formData.email, formData.password)
 
-    const success = await login(formData.email, formData.password, formData.role as "patient" | "doctor")
-
-    if (success) {
-      if (formData.role === "patient") {
+    if (user) {
+      if (user.role === "paciente") {
         router.push("/patient/dashboard")
-      } else if (formData.role === "doctor") {
+      } else if (user.role === "doctor") {
         router.push("/doctor/dashboard")
       }
     } else {
-      alert("Invalid credentials. Use 'password' as the password.")
+      alert("Credenciales incorrectas. Vuelva a intentarlo")
     }
   }
 
@@ -46,23 +45,22 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Activity className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">NeumoDiag</span>
+            <span className="text-2xl font-bold text-foreground">NeumoDiagnostics</span>
           </Link>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome back</h1>
-          <p className="text-muted-foreground">Sign in to your account to continue</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Bienvenido</h1>
+          <p className="text-muted-foreground">Inicia sesion para continuar</p>
         </div>
 
         {/* Login Form */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-card-foreground">Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access your dashboard</CardDescription>
+            <CardTitle className="text-card-foreground">Inicio de sesion</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-card-foreground">
-                  Email
+                  Correo electronico
                 </Label>
                 <Input
                   id="email"
@@ -77,13 +75,13 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-card-foreground">
-                  Password
+                  Contraseña
                 </Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Ingrese su contraseña"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
@@ -105,35 +103,20 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="role" className="text-card-foreground">
-                  Role
-                </Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                  <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="patient">Patient</SelectItem>
-                    <SelectItem value="doctor">Doctor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !formData.email || !formData.password || !formData.role}
+                disabled={isLoading || !formData.email || !formData.password}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Iniciando sesion" : "Iniciar sesion"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                ¿No tienes una cuenta?{" "}
                 <Link href="/register" className="text-primary hover:underline">
-                  Register here
+                  Registrate aqui
                 </Link>
               </p>
             </div>
