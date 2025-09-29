@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Download, FileImage, Clock, User, Calendar, Brain, AlertTriangle, CheckCircle, FileText, Stethoscope, Share } from "lucide-react"
+import { ArrowLeft, Download, FileImage, Clock, User, Calendar, Brain, AlertTriangle, CheckCircle, FileText, Stethoscope, Share, Send } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useToast } from "@/hooks/use-toast"
 import { PreDiagnosticService } from "@/lib/prediagnostic-service"
+import { DiagnosticService, DiagnosticPayload } from "@/lib/diagnostic-service"
 
 // Datos mock SIN fechaProcesamiento para evitar errores
 const mockDetailData: Record<string, any> = {
@@ -63,11 +66,20 @@ interface PreDiagnosticDetailProps {
 
 export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProps) {
   const router = useRouter()
-  const [recommendation, setRecommendation] = useState("")
-  const [notes, setNotes] = useState("")
+  const { toast } = useToast()
+  
+  // Estados para el diagnóstico médico
+  const [approval, setApproval] = useState<"Si" | "No" | null>(null)
+  const [medicalComment, setMedicalComment] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Estados para los datos del prediagnóstico
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isUsingMockData, setIsUsingMockData] = useState(false)
+  
+  // Estados de validación
+  const [errors, setErrors] = useState<string[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -176,6 +188,82 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
     if (prob >= 0.8) return "destructive"
     if (prob >= 0.5) return "outline"
     return "secondary"
+  }
+
+  // Función para validar y enviar el diagnóstico
+  const handleSubmitDiagnostic = async () => {
+    // Limpiar errores previos
+    setErrors([])
+    
+    // Validar campos requeridos
+    const validationErrors: string[] = []
+    
+    if (!approval) {
+      validationErrors.push("Debe seleccionar si aprueba o rechaza el resultado del modelo")
+    }
+    
+    if (!medicalComment.trim()) {
+      validationErrors.push("El comentario médico es obligatorio")
+    } else if (medicalComment.trim().length < 10) {
+      validationErrors.push("El comentario médico debe tener al menos 10 caracteres")
+    } else if (medicalComment.length > 1000) {
+      validationErrors.push("El comentario médico no puede exceder 1000 caracteres")
+    }
+    
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors)
+      toast({
+        title: "Errores de validación",
+        description: validationErrors.join(", "),
+        variant: "destructive"
+      })
+      return
+    }
+    
+    // Construir payload
+    const diagnostic: DiagnosticPayload = {
+      aprobacion: approval!,
+      comentario: medicalComment.trim()
+    }
+    
+    setIsSubmitting(true)
+    
+    try {
+      // Enviar diagnóstico al backend
+      const result = await DiagnosticService.createDiagnostic(prediagnosticId, diagnostic)
+      
+      if (result.success) {
+        // Mostrar notificación de éxito
+        toast({
+          title: "Diagnóstico enviado",
+          description: result.message,
+          variant: "default"
+        })
+        
+        // Redirigir al dashboard de casos pendientes después de un breve delay
+        setTimeout(() => {
+          router.push('/doctor/casos-pendientes')
+        }, 2000)
+        
+      } else {
+        // Mostrar error
+        toast({
+          title: "Error al enviar diagnóstico",
+          description: result.message,
+          variant: "destructive"
+        })
+      }
+      
+    } catch (error) {
+      console.error('Error al enviar diagnóstico:', error)
+      toast({
+        title: "Error inesperado",
+        description: "No se pudo enviar el diagnóstico. Intente nuevamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -329,60 +417,139 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
             </CardContent>
           </Card>
 
-          {/* Validación Médica */}
+          {/* Diagnóstico Médico - HU5 */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Stethoscope className="w-5 h-5 mr-2 text-red-600" />
-                Validación Médica
+                Diagnóstico Médico
               </CardTitle>
               <CardDescription>
-                Confirme el diagnóstico propuesto por el modelo IA
+                Registre su diagnóstico aprobando o rechazando el resultado del modelo IA
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
+              {/* Mostrar errores de validación */}
+              {errors.length > 0 && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <AlertTriangle className="w-4 h-4 text-red-600 mr-2" />
+                    <p className="text-sm font-medium text-red-800">Errores de validación:</p>
+                  </div>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    {errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Checkbox para aprobar o rechazar */}
+              <div className="space-y-4">
                 <Label className="text-sm font-medium text-gray-700">
-                  ¿Confirma el diagnóstico del modelo IA?
+                  Aprobación del resultado del modelo IA *
                 </Label>
-                <RadioGroup 
-                  value={recommendation} 
-                  onValueChange={setRecommendation}
-                  className="mt-3"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="confirmo" id="confirmo" />
-                    <Label htmlFor="confirmo">Sí, confirmo el diagnóstico</Label>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox 
+                      id="approve"
+                      checked={approval === "Si"}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setApproval("Si")
+                          setErrors(errors.filter(e => !e.includes("seleccionar si aprueba")))
+                        } else if (approval === "Si") {
+                          setApproval(null)
+                        }
+                      }}
+                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                    />
+                    <Label htmlFor="approve" className="text-sm cursor-pointer">
+                      ✅ <strong>Apruebo</strong> el diagnóstico del modelo IA
+                    </Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no_confirmo" id="no_confirmo" />
-                    <Label htmlFor="no_confirmo">No, no confirmo el diagnóstico</Label>
+                  <div className="flex items-center space-x-3">
+                    <Checkbox 
+                      id="reject"
+                      checked={approval === "No"}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setApproval("No")
+                          setErrors(errors.filter(e => !e.includes("seleccionar si aprueba")))
+                        } else if (approval === "No") {
+                          setApproval(null)
+                        }
+                      }}
+                      className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                    />
+                    <Label htmlFor="reject" className="text-sm cursor-pointer">
+                      ❌ <strong>Rechazo</strong> el diagnóstico del modelo IA
+                    </Label>
                   </div>
-                </RadioGroup>
+                </div>
+                {approval && (
+                  <div className="mt-2 p-3 rounded-lg bg-gray-50">
+                    <p className="text-sm text-gray-700">
+                      <strong>Seleccionado:</strong> {approval === "Si" ? "Aprobado" : "Rechazado"}
+                    </p>
+                  </div>
+                )}
               </div>
 
+              {/* Comentario médico */}
               <div>
-                <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
-                  Comentarios adicionales
+                <Label htmlFor="medical-comment" className="text-sm font-medium text-gray-700">
+                  Criterio médico * (mínimo 10 caracteres)
                 </Label>
                 <Textarea
-                  id="notes"
-                  placeholder="Ingrese sus observaciones médicas, recomendaciones o cualquier comentario adicional sobre el caso..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="mt-2 min-h-[120px]"
+                  id="medical-comment"
+                  placeholder="Ingrese su criterio médico, observaciones clínicas, recomendaciones de tratamiento y justificación de su decisión diagnóstica..."
+                  value={medicalComment}
+                  onChange={(e) => {
+                    setMedicalComment(e.target.value)
+                    // Limpiar errores relacionados con el comentario
+                    setErrors(errors.filter(e => !e.includes("comentario")))
+                  }}
+                  className={`mt-2 min-h-[120px] ${
+                    errors.some(e => e.includes("comentario")) ? "border-red-500" : ""
+                  }`}
+                  maxLength={1000}
                 />
+                <div className="flex justify-between mt-1">
+                  <p className="text-xs text-gray-500">
+                    {medicalComment.length}/1000 caracteres
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Mínimo: 10 caracteres
+                  </p>
+                </div>
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <Button className="flex-1">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Guardar Validación
+              {/* Botón de envío */}
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleSubmitDiagnostic}
+                  disabled={isSubmitting}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Enviando diagnóstico...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Enviar Diagnóstico
+                    </>
+                  )}
                 </Button>
-                <Button variant="outline">
-                  <Share className="w-4 h-4 mr-2" />
-                  Compartir Caso
-                </Button>
+                
+                {/* Información adicional */}
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Al enviar el diagnóstico será redirigido al dashboard de casos pendientes
+                </p>
               </div>
             </CardContent>
           </Card>

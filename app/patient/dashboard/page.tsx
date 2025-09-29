@@ -10,14 +10,28 @@ import { UploadRadiography } from "@/components/upload-radiography"
 import { RadiographyHistory } from "@/components/radiography-history"
 import { RadiographyDetail } from "@/components/radiography-detail"
 
+// Type definition for radiography records
+interface RadiographyRecord {
+  id: string
+  uploadDate: string
+  processedDate: string | null
+  validatedDate: string | null
+  status: "uploaded" | "processed" | "validated"
+  patientId: string
+  imageUrl: string
+  doctorReport: string | null
+  doctorName: string | null
+  aiDiagnosis: string | null
+}
+
 // Mock data for radiography records
-const mockRecords = [
+const mockRecords: RadiographyRecord[] = [
   {
     id: "1",
     uploadDate: "2024-01-15",
     processedDate: "2024-01-16",
     validatedDate: "2024-01-17",
-    status: "validated" as const,
+    status: "validated",
     patientId: "P001",
     imageUrl: "/chest-x-ray-radiography.jpg",
     doctorReport:
@@ -30,7 +44,7 @@ const mockRecords = [
     uploadDate: "2024-01-10",
     processedDate: "2024-01-11",
     validatedDate: null,
-    status: "processed" as const,
+    status: "processed",
     patientId: "P001",
     imageUrl: "/knee-x-ray-radiography.jpg",
     doctorReport: null,
@@ -42,7 +56,7 @@ const mockRecords = [
     uploadDate: "2024-01-08",
     processedDate: null,
     validatedDate: null,
-    status: "uploaded" as const,
+    status: "uploaded",
     patientId: "P001",
     imageUrl: "/spine-x-ray-radiography.jpg",
     doctorReport: null,
@@ -52,8 +66,8 @@ const mockRecords = [
 ]
 
 export default function PatientDashboard() {
-  const [selectedRecord, setSelectedRecord] = useState<(typeof mockRecords)[0] | null>(null)
-  const [records, setRecords] = useState(mockRecords)
+  const [selectedRecord, setSelectedRecord] = useState<RadiographyRecord | null>(null)
+  const [records, setRecords] = useState<RadiographyRecord[]>(mockRecords)
 
   const handleUploadSuccess = (newRecord: any) => {
     setRecords([newRecord, ...records])
