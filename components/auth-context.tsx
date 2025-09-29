@@ -80,26 +80,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (userData: any): Promise<boolean> => {
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const responseRegister = await fetch("http://localhost:8080/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      })
+
+    if (!responseRegister.ok) {
+      setIsLoading(false)
+      return false
+    }
+
+    const registerData = await responseRegister.json()
+
+    const responseLogin = await fetch("http://localhost:8080/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correo: userData.correo, contrasena: userData.contrasena }),
+    })
+
+    if (!responseLogin.ok) {
+      setIsLoading(false)
+      return false
+    }
+
+    const loginData = await responseLogin.json()
+
 
     const newUser = {
-      id: "1",
-      name: userData.name,
-      email: userData.email,
-      role: userData.role,
-      avatar: userData.role === "patient" ? "/patient-avatar.png" : "/doctor-avatar.png",
+      id: loginData.id,
+      name: userData.nombre_completo,
+      email: userData.correo,
+      role: userData.rol,
+      avatar: userData.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
     }
 
     setUser(newUser)
 
     // Set cookies
-    document.cookie = "auth-token=mock-token; path=/"
-    document.cookie = `user-role=${userData.role}; path=/`
+    document.cookie = `auth-token=${loginData.token}; path=/`
+    document.cookie = `user-role=${userData.rol}; path=/`
+
+    
 
     setIsLoading(false)
     return true
+
+  } catch (error) {
+    console.error("Error en registro:", error)
+    setIsLoading(false)
+    return false
   }
+}
 
   const logout = () => {
     setUser(null)
