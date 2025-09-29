@@ -17,12 +17,27 @@ export class GraphQLClient {
       
       console.log(`📤 Enviando request:`, requestBody);
       
+      // Obtener token JWT de las cookies para autenticación
+      const token = typeof document !== 'undefined' 
+        ? document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1]
+        : null;
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      // Agregar token JWT si está disponible
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log(`🔐 JWT Token agregado a headers`);
+      } else {
+        console.log(`⚠️ No JWT token found - request may fail for authenticated queries`);
+      }
+
       const response = await fetch(GRAPHQL_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers,
         body: JSON.stringify(requestBody),
         credentials: 'omit', // Sin credenciales para evitar problemas
         mode: 'cors', // Explícitamente CORS
