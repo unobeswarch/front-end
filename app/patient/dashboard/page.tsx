@@ -14,6 +14,20 @@ import { GET_CASES, Case } from "@/lib/get-cases-query"
 import { useAuth } from "@/components/auth-context"
 import { RadiographyDetail } from "@/components/radiography-detail"
 
+// Type definition for radiography records
+interface RadiographyRecord {
+  id: string
+  uploadDate: string
+  processedDate: string | null
+  validatedDate: string | null
+  status: "uploaded" | "processed" | "validated"
+  patientId: string
+  imageUrl: string
+  doctorReport: string | null
+  doctorName: string | null
+  aiDiagnosis: string | null
+}
+
 // Mock data for radiography records
 // No mockRecords, se obtienen de la API
 
@@ -79,6 +93,7 @@ export default function PatientDashboard() {
     fetchCases()
   }, [user])
 
+
   const handleUploadSuccess = (newRecord: any) => {
     setRecords([newRecord, ...records])
   }
@@ -93,8 +108,8 @@ export default function PatientDashboard() {
 
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Patient Dashboard</h1>
-          <p className="text-muted-foreground">Manage your radiography records and view results</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard del paciente</h1>
+          <p className="text-muted-foreground">Gestione sus radiografias y resultados</p>
         </div>
 
         {error && (
@@ -106,9 +121,9 @@ export default function PatientDashboard() {
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="upload">Upload</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="overview">General</TabsTrigger>
+            <TabsTrigger value="upload">Subir radiografía</TabsTrigger>
+            <TabsTrigger value="history">Historial</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -116,7 +131,7 @@ export default function PatientDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Total Records</CardTitle>
+                  <CardTitle className="text-sm font-medium text-card-foreground">Número de registros</CardTitle>
                   <FileImage className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -128,6 +143,7 @@ export default function PatientDashboard() {
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-card-foreground">Validadas</CardTitle>
+
                   <CheckCircle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -135,6 +151,7 @@ export default function PatientDashboard() {
                     {records.filter((r) => r.estado === "validado").length}
                   </div>
                   <p className="text-xs text-muted-foreground">Aprobadas por el doctor</p>
+
                 </CardContent>
               </Card>
 

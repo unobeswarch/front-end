@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { FileImage, Search, Calendar, Eye } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface RadiographyRecord {
   radiografia_id: string
@@ -21,6 +22,7 @@ interface RadiographyHistoryProps {
 
 export function RadiographyHistory({ records, onSelectRecord }: RadiographyHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("")
+  const router = useRouter()
 
   const filteredRecords = records.filter(
     (record) =>
