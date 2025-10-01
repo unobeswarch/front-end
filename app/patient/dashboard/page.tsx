@@ -8,6 +8,10 @@ import { FileImage, Eye, Clock, CheckCircle } from "lucide-react"
 import { PatientHeader } from "@/components/patient-header"
 import { UploadRadiography } from "@/components/upload-radiography"
 import { RadiographyHistory } from "@/components/radiography-history"
+import { useEffect } from "react"
+import { GraphQLClient } from "@/lib/apollo-client"
+import { GET_CASES, Case } from "@/lib/get-cases-query"
+import { useAuth } from "@/components/auth-context"
 import { RadiographyDetail } from "@/components/radiography-detail"
 
 // Type definition for radiography records
@@ -25,49 +29,70 @@ interface RadiographyRecord {
 }
 
 // Mock data for radiography records
-const mockRecords: RadiographyRecord[] = [
-  {
-    id: "1",
-    uploadDate: "2024-01-15",
-    processedDate: "2024-01-16",
-    validatedDate: "2024-01-17",
-    status: "validated",
-    patientId: "P001",
-    imageUrl: "/chest-x-ray-radiography.jpg",
-    doctorReport:
-      "Normal chest X-ray. No signs of pneumonia or other abnormalities. Heart size and lung fields appear normal.",
-    doctorName: "Dr. Sarah Johnson",
-    aiDiagnosis: "No abnormalities detected",
-  },
-  {
-    id: "2",
-    uploadDate: "2024-01-10",
-    processedDate: "2024-01-11",
-    validatedDate: null,
-    status: "processed",
-    patientId: "P001",
-    imageUrl: "/knee-x-ray-radiography.jpg",
-    doctorReport: null,
-    doctorName: null,
-    aiDiagnosis: "Possible minor joint space narrowing",
-  },
-  {
-    id: "3",
-    uploadDate: "2024-01-08",
-    processedDate: null,
-    validatedDate: null,
-    status: "uploaded",
-    patientId: "P001",
-    imageUrl: "/spine-x-ray-radiography.jpg",
-    doctorReport: null,
-    doctorName: null,
-    aiDiagnosis: null,
-  },
-]
+// No mockRecords, se obtienen de la API
 
 export default function PatientDashboard() {
-  const [selectedRecord, setSelectedRecord] = useState<RadiographyRecord | null>(null)
-  const [records, setRecords] = useState<RadiographyRecord[]>(mockRecords)
+  const [selectedRecord, setSelectedRecord] = useState<any | null>(null)
+  const [records, setRecords] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
+
+  useEffect(() => {
+    const fetchCases = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        // Obtener JWT del paciente desde cookie
+        const match = document.cookie.match(/auth-token=([^;]+)/)
+        const jwt = match ? match[1] : null
+        if (!jwt) {
+          setError("No autenticado. Inicia sesión nuevamente.")
+          setLoading(false)
+          return
+        }
+        const response = await fetch("http://localhost:8080/query", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({ query: GET_CASES }),
+        })
+        const result = await response.json()
+        if (result.errors) {
+          const msg = result.errors[0]?.message || "Error desconocido"
+          if (msg.includes("sin radiografias")) {
+            setRecords([])
+            setError(null)
+          } else {
+            setError(msg)
+          }
+          setLoading(false)
+          return
+        }
+        const cases: Case[] = result.data?.getCases || []
+        const mapped = cases.map((c) => ({
+          radiografia_id: c.id,
+          fecha_subida: c.fechaSubida,
+          estado:
+            c.estado.toLowerCase().includes("valid")
+              ? "validado"
+              : c.estado.toLowerCase().includes("proces")
+              ? "procesado"
+              : "subido",
+          resultado_preliminar: c.resultados?.etiqueta || null,
+        }))
+        setRecords(mapped)
+      } catch (err: any) {
+        setError(err.message || "No se pudieron recuperar los casos.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCases()
+  }, [user])
+
 
   const handleUploadSuccess = (newRecord: any) => {
     setRecords([newRecord, ...records])
@@ -86,6 +111,13 @@ export default function PatientDashboard() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard del paciente</h1>
           <p className="text-muted-foreground">Gestione sus radiografias y resultados</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>
+        )}
+        {loading ? (
+          <div className="mb-4 p-4 text-muted-foreground">Cargando radiografías...</div>
+        ) : null}
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
@@ -110,27 +142,29 @@ export default function PatientDashboard() {
 
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Registros validados</CardTitle>
+                  <CardTitle className="text-sm font-medium text-card-foreground">Validadas</CardTitle>
+
                   <CheckCircle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-card-foreground">
-                    {records.filter((r) => r.status === "validated").length}
+                    {records.filter((r) => r.estado === "validado").length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Aprobados por un doctor</p>
+                  <p className="text-xs text-muted-foreground">Aprobadas por el doctor</p>
+
                 </CardContent>
               </Card>
 
               <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Registros pendientes</CardTitle>
+                  <CardTitle className="text-sm font-medium text-card-foreground">Pendientes</CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-card-foreground">
-                    {records.filter((r) => r.status !== "validated").length}
+                    {records.filter((r) => r.estado !== "validado").length}
                   </div>
-                  <p className="text-xs text-muted-foreground">En espera de revisión</p>
+                  <p className="text-xs text-muted-foreground">En revisión</p>
                 </CardContent>
               </Card>
             </div>
@@ -138,14 +172,14 @@ export default function PatientDashboard() {
             {/* Recent Records */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Registros recientes</CardTitle>
-                <CardDescription>Tus radiografías más recientes</CardDescription>
+                <CardTitle className="text-card-foreground">Radiografías recientes</CardTitle>
+                <CardDescription>Tus últimas radiografías subidas</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {records.slice(0, 3).map((record) => (
                     <div
-                      key={record.id}
+                      key={record.radiografia_id}
                       className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent cursor-pointer transition-colors"
                       onClick={() => setSelectedRecord(record)}
                     >
@@ -154,28 +188,34 @@ export default function PatientDashboard() {
                           <FileImage className="h-6 w-6 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="font-medium text-card-foreground">Registro #{record.id}</p>
+                          <p className="font-medium text-card-foreground">Radiografía #{record.radiografia_id}</p>
                           <p className="text-sm text-muted-foreground">
-                            Subido {new Date(record.uploadDate).toLocaleDateString()}
+                            Subida {new Date(record.fecha_subida).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge
                           variant={
-                            record.status === "validated"
+                            record.estado === "validado"
                               ? "default"
-                              : record.status === "processed"
+                              : record.estado === "procesado"
                                 ? "secondary"
                                 : "outline"
                           }
                         >
-                          {record.status}
+                          {record.estado}
                         </Badge>
                         <Eye className="h-4 w-4 text-muted-foreground" />
                       </div>
                     </div>
                   ))}
+                  {records.length === 0 && !loading && !error && (
+                    <div className="text-center py-8">
+                      <FileImage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Aún no tienes radiografías subidas.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
