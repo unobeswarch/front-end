@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,7 @@ import {
   CheckCircle,
   XCircle,
   Construction,
+  ChevronRight,
 } from "lucide-react"
 import { CasesService, type Case } from "@/lib/cases-service"
 
@@ -22,6 +24,7 @@ export function DashboardCasosPendientes() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isUsingMockData, setIsUsingMockData] = useState(false)
+  const router = useRouter()
 
   // Mock data for development when backend is not available
   const mockCases: Case[] = [
@@ -117,8 +120,15 @@ export function DashboardCasosPendientes() {
     const isUrgent = CasesService.getUrgencyLevel(caseData) === "urgent"
     const badgeColor = getBadgeColor(caseData.currentStatus)
 
+    const handleCaseClick = () => {
+      router.push(`/doctor/cases/${caseData.id}`)
+    }
+
     return (
-      <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border hover:bg-accent transition-colors cursor-pointer">
+      <div 
+        className="flex items-center justify-between p-4 bg-background rounded-lg border border-border hover:bg-accent hover:shadow-md transition-all cursor-pointer group"
+        onClick={handleCaseClick}
+      >
         <div className="flex items-center gap-4">
           <div
             className={`w-12 h-12 rounded-lg flex items-center justify-center ${
@@ -142,14 +152,17 @@ export function DashboardCasosPendientes() {
             )}
           </div>
         </div>
-        <div className="text-right space-y-2">
-          <div className="flex gap-2">
-            <Badge className={badgeColor}>{caseData.currentStatus}</Badge>
-            <Badge variant={isUrgent ? "destructive" : "secondary"}>{isUrgent ? "Urgente" : "Rutina"}</Badge>
+        <div className="flex items-center gap-3">
+          <div className="text-right space-y-2">
+            <div className="flex gap-2">
+              <Badge className={badgeColor}>{caseData.currentStatus}</Badge>
+              <Badge variant={isUrgent ? "destructive" : "secondary"}>{isUrgent ? "Urgente" : "Rutina"}</Badge>
+            </div>
+            {caseData.aiConfidence && (
+              <div className="text-sm text-muted-foreground">Confianza: {(caseData.aiConfidence * 100).toFixed(1)}%</div>
+            )}
           </div>
-          {caseData.aiConfidence && (
-            <div className="text-sm text-muted-foreground">Confianza: {(caseData.aiConfidence * 100).toFixed(1)}%</div>
-          )}
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
         </div>
       </div>
     )
