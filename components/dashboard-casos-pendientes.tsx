@@ -68,16 +68,35 @@ export function DashboardCasosPendientes() {
     setError(null)
 
     try {
-      console.log("🔍 Attempting to fetch cases from backend...")
+      console.log("🔍 Attempting to fetch cases from Python backend...")
 
-      // Try to fetch from the real backend first
-      const backendCases = await CasesService.getCases()
+      // Fetch from Python service directly instead of CasesService
+      const response = await fetch("http://localhost:8000/prediagnostic/cases")
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const pythonCases = await response.json()
+      console.log("✅ Cases fetched from Python backend:", pythonCases)
 
-      console.log("✅ Cases fetched from backend:", backendCases)
-      setCases(backendCases)
+      // Transform Python data to Case interface
+      const transformedCases: Case[] = pythonCases.map((item: any) => ({
+        id: item.id,
+        patientId: item.paciente,
+        caseDate: item.fecha,
+        currentStatus: item.estado,
+        patientName: `Paciente ${item.paciente}`,
+        aiDiagnosis: "Pendiente análisis",
+        aiConfidence: 0,
+        urgency: "routine" as const,
+        imageUrl: ""
+      }))
+
+      setCases(transformedCases)
       setIsUsingMockData(false)
     } catch (error) {
-      console.log("⚠️ Backend not available, using mock data:", error)
+      console.log("⚠️ Python backend not available, using mock data:", error)
 
       // Fallback to mock data
       setCases(mockCases)
@@ -97,7 +116,17 @@ export function DashboardCasosPendientes() {
   }
 
   const formatDate = (dateString: string): string => {
-    return CasesService.formatDate(dateString)
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const getUrgencyLevel = (caseItem: Case): "urgent" | "routine" => {
+    return caseItem.urgency || "routine"
   }
 
   const getBadgeColor = (status: string): string => {
@@ -113,8 +142,8 @@ export function DashboardCasosPendientes() {
     }
   }
 
-  const availableCases = cases.filter((c) => CasesService.getUrgencyLevel(c) !== "urgent")
-  const urgentCases = cases.filter((c) => CasesService.getUrgencyLevel(c) === "urgent")
+  const availableCases = cases.filter((c) => getUrgencyLevel(c) !== "urgent")
+  const urgentCases = cases.filter((c) => getUrgencyLevel(c) === "urgent")
 
   const CaseCard = ({ case: caseData }: { case: Case }) => {
     const isUrgent = CasesService.getUrgencyLevel(caseData) === "urgent"
