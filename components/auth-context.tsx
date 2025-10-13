@@ -22,6 +22,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -37,12 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (hasToken && userRole) {
       const token = document.cookie.split("; ").find(row => row.startsWith("auth-token="))?.split("=")[1]
 
-       fetch("http://localhost:8080/validation", {
-        method: "GET",
+       fetch("http://localhost:8081/validation", {
+        method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ required_role: userRole }),
       })
         .then(res => {
           if (!res.ok) throw new Error("Token inválido o expirado")
@@ -67,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-    const response = await fetch("http://localhost:8080/auth", {
+    const response = await fetch("http://localhost:8081/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo, contrasena }),
@@ -82,12 +84,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("🔍 Auth response data:", data)
 
       const userData = {
-        id: data.nombre.toString(), // data.nombre contains the numeric user ID (3)
+        id: data.user_id, // data.nombre contains the numeric user ID (3)
         email: correo,
-        name: "Test Patient GUI", // Use a proper display name
+        name: data.nombre.toString(), // Use a proper display name
         role: data.rol,
         avatar: data.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
       }
+
+      console.log(userData)
 
       console.log("👤 Created user data:", userData)
 
@@ -109,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-      const responseRegister = await fetch("http://localhost:8080/register", {
+      const responseRegister = await fetch("http://localhost:8081/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
