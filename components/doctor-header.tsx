@@ -26,7 +26,7 @@ export function DoctorHeader() {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="h-8 w-8 text-primary" />
+            <img src="/logo_sin_nombre.svg" alt="Logo" className="h-20 w-20" />
             <h1 className="text-2xl font-bold text-card-foreground">NeumoDiagnostics</h1>
             <span className="text-sm text-muted-foreground ml-2 flex items-center gap-1">
               <Stethoscope className="h-4 w-4" />
@@ -53,7 +53,7 @@ export function DoctorHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-12 w-12">
                     <AvatarImage src={user?.avatar || "/doctor-avatar.png"} alt="Doctor" />
                     <AvatarFallback>
                       {user?.name && typeof user.name === 'string'

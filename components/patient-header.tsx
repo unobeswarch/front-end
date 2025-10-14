@@ -24,7 +24,7 @@ export function PatientHeader() {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="h-8 w-8 text-primary" />
+            <img src="/logo_sin_nombre.svg" alt="Logo" className="h-20 w-20" />
             <h1 className="text-2xl font-bold text-card-foreground">NeumoDiagnostics</h1>
             <span className="text-sm text-muted-foreground ml-2">Portal del paciente</span>
           </div>
@@ -33,7 +33,7 @@ export function PatientHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-12 w-12">
                     <AvatarImage src={user?.avatar || "/patient-avatar.png"} alt="Patient" />
                     <AvatarFallback>
                       {user?.name && typeof user.name === 'string'
@@ -49,8 +49,8 @@ export function PatientHeader() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name || "John Doe"}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user?.email || "john.doe@email.com"}</p>
+                    <p className="text-sm font-medium leading-none">{user?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

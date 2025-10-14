@@ -100,13 +100,13 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
           // Construct the proper image URL
           let imageUrl = `https://via.placeholder.com/400x300/1f2937/ffffff?text=Radiografia+Real+${backendData.pacienteId}`
           if (backendData.urlrad) {
-            // Extract just the filename from the Windows path
-            const pathParts = backendData.urlrad.split('\\')
-            const filename = pathParts[pathParts.length - 1] // Get the last part (filename)
-            
-            // Construct URL using the Python service image endpoint
+            // Extrae el nombre del archivo, sin carpetas
+            const pathParts = backendData.urlrad.split(/[\\/]/) // divide por '/' o '\'
+            const filename = pathParts[pathParts.length - 1]  // solo RAD-xxxx.jpg
+
+            // URL correcta hacia FastAPI
             imageUrl = `http://localhost:8000/prediagnostic/image/${filename}`
-            console.log(`🖼️ Constructed image URL: ${imageUrl} from path: ${backendData.urlrad}`)
+            console.log(`🖼️ Imagen URL final: ${imageUrl}`)
           }
           
           setData({
