@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const hasToken = document.cookie.includes("auth-token")
     const userRole = document.cookie.includes("user-role=paciente")
+
       ? "paciente"
       : document.cookie.includes("user-role=doctor")
         ? "doctor"
@@ -50,13 +51,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!res.ok) throw new Error("Token inválido o expirado")
           return res.json()
         })
-        .then(data => {
+        .then(async data => {
+          let avatarUrl = null
+          try {
+            const imageResponse = await fetch(`http://localhost:8081/userImage?id=${data.UserID}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob()
+              avatarUrl = URL.createObjectURL(blob)
+            }
+          } catch (error) {
+            console.warn("No se pudo cargar la imagen del usuario, usando avatar por defecto")
+          }
+
           setUser({
             id: data.UserID,
             name: data.Name,
             email: data.Email,
             role: data.Role,
-            avatar: data.Role === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
+            avatar: avatarUrl || (data.Role === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png"),
         })
       })
       .catch(err => {
@@ -82,28 +96,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const data = await response.json()
     console.log("🔍 Auth response data:", data)
+    document.cookie = `auth-token=${data.token}; path=/`
+    document.cookie = `user-role=${data.rol}; path=/`
 
-      const userData = {
-        id: data.user_id, // data.nombre contains the numeric user ID (3)
-        email: correo,
-        name: data.nombre.toString(), // Use a proper display name
-        role: data.rol,
-        avatar: data.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
-      }
+    const imageResponse = await fetch(`http://localhost:8081/userImage?id=${data.user_id}`, {
+      headers: { "Authorization": `Bearer ${data.token}` },
+    })
 
-      console.log(userData)
+    let avatarUrl = null
+    if (imageResponse.ok) {
+      const blob = await imageResponse.blob()
+      avatarUrl = URL.createObjectURL(blob)
+    }
 
-      console.log("👤 Created user data:", userData)
+    const userData = {
+      id: data.user_id,
+      email: correo,
+      name: data.nombre.toString(),
+      role: data.rol,
+      avatar: avatarUrl || (data.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png"),
+    }
 
-      setUser(userData)
+    setUser(userData)
+    setIsLoading(false)
+    return userData
 
-      document.cookie = `auth-token=${data.token}; path=/`
-      document.cookie = `user-role=${data.rol}; path=/`
-
-      setIsLoading(false)
-      return userData
-
-    } catch(error) {
+    } catch (error) {
+      console.error("Error en login:", error)
       setIsLoading(false)
       return null
     }

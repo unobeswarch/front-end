@@ -53,7 +53,7 @@ export function DoctorHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-12 w-12">
                     <AvatarImage src={user?.avatar || "/doctor-avatar.png"} alt="Doctor" />
                     <AvatarFallback>
                       {user?.name && typeof user.name === 'string'
