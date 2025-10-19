@@ -1,57 +1,31 @@
-"use client"
-
 import type React from "react"
-
-import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth-context"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { redirect } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Activity, Eye, EyeOff } from "lucide-react"
+import { register } from "@/server-actions/auth-actions"
 
-export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "",
-    age: 0,
-    identification: "",
-    agreeToTerms: false,
-  })
-  const { register, isLoading } = useAuth()
-  const router = useRouter()
+export default async function RegisterPage() {
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseña no coinciden")
-      return
-    }
-
+  async function handleRegister(formData: FormData) {
+    "use server"
     const userData = {
-      nombre_completo: formData.name,
-      edad: formData.age,
-      rol: formData.role,
-      identificacion: formData.identification,
-      correo: formData.email,
-      contrasena: formData.password,
-      acepta_tratamiento_datos: formData.agreeToTerms,
+      nombre_completo: formData.get("name"),
+      edad: Number(formData.get("age")),
+      rol: formData.get("role"),
+      identificacion: formData.get("identification"),
+      correo: formData.get("email"),
+      contrasena: formData.get("password"),
+      acepta_tratamiento_datos: true,
     }
 
     const success = await register(userData)
 
     if (success) {
-      router.push("/login")
-      alert("Registro completado. Por favor, inicie sesion")
+      redirect("/login")
     }
   }
 
@@ -73,16 +47,15 @@ export default function RegisterPage() {
             <CardTitle className="text-card-foreground">Registro</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form action={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-card-foreground">
                     Nombre completo
                   </Label>
                   <Input
                     id="name"
+                    name="name"
                     placeholder="Jorge Martinez"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                     className="bg-background border-border text-foreground"
                   />
@@ -94,10 +67,9 @@ export default function RegisterPage() {
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="jorge@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                   className="bg-background border-border text-foreground"
                 />
@@ -107,15 +79,11 @@ export default function RegisterPage() {
                     <Label htmlFor="role" className="text-card-foreground">
                       Rol
                     </Label>
-                    <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                      <SelectTrigger className="bg-background border-border text-foreground">
-                        <SelectValue placeholder="Seleccione su rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="paciente">Paciente</SelectItem>
-                        <SelectItem value="doctor">Doctor</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <select id="role" name="role" required className="bg-background border-border text-foreground w-full rounded-md px-3 py-2">
+                      <option value="">Seleccione su rol</option>
+                      <option value="paciente">Paciente</option>
+                      <option value="doctor">Doctor</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                   <Label htmlFor="email" className="text-card-foreground">
@@ -123,12 +91,11 @@ export default function RegisterPage() {
                   </Label>
                   <Input
                     id="age"
+                    name="age"
                     type="number"
                     placeholder="Ingrese su edad"
                     min={0}
                     max={120}
-                    value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: Number(e.target.value)})}
                     required
                     className="bg-background border-border text-foreground"
                   />
@@ -141,9 +108,8 @@ export default function RegisterPage() {
                   </Label>
                   <Input
                     id="identification"
+                    name="identification"
                     placeholder="Ingrese su identificacion"
-                    value={formData.identification}
-                    onChange={(e) => setFormData({ ...formData, identification: e.target.value})}
                     required
                     className="bg-background border-border text-foreground"
                   />
@@ -156,11 +122,10 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    name="password"
                     placeholder="Escriba su contraseña"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
+                    type="password"
                     className="bg-background border-border text-foreground pr-10"
                   />
                   <Button
@@ -168,13 +133,7 @@ export default function RegisterPage() {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
                   </Button>
                 </div>
               </div>
@@ -186,10 +145,9 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
                     placeholder="Escriba su contraseña nuevamente"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    type="password"
                     required
                     className="bg-background border-border text-foreground pr-10"
                   />
@@ -198,13 +156,7 @@ export default function RegisterPage() {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
                   </Button>
                 </div>
               </div>
@@ -212,8 +164,7 @@ export default function RegisterPage() {
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="terms"
-                  checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => setFormData({ ...formData, agreeToTerms: checked as boolean })}
+                  name="terms"
                 />
                 <Label htmlFor="terms" className="text-sm text-card-foreground">
                   Acepto los{" "}
@@ -227,8 +178,8 @@ export default function RegisterPage() {
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !formData.agreeToTerms}>
-                {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+              <Button type="submit" className="w-full">
+                Crear cuenta
               </Button>
             </form>
 

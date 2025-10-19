@@ -1,5 +1,6 @@
-import { GraphQLClient } from './apollo-client';
-import { CREATE_DIAGNOSTIC, CreateDiagnosticResponse } from './graphql-queries';
+
+import { CREATE_DIAGNOSTIC } from './graphql-queries';
+import { sendDiagnostic } from '@/server-actions/cases-actions';
 
 // Tipos para el diagnóstico médico
 export interface DiagnosticPayload {
@@ -33,16 +34,8 @@ export class DiagnosticService {
     try {
       console.log(`🩺 Enviando diagnóstico para ID: ${prediagnosticId}`, diagnostic);
       
-      const data = await GraphQLClient.query<CreateDiagnosticResponse>(
-        CREATE_DIAGNOSTIC,
-        {
-          id_prediagnostico: prediagnosticId,
-          input: {
-            aprobacion: diagnostic.aprobacion,
-            comentario: diagnostic.comentario
-          }
-        }
-      );
+      
+      const data = await sendDiagnostic(prediagnosticId, diagnostic)
       
       console.log(`✅ Diagnóstico creado exitosamente:`, data);
       

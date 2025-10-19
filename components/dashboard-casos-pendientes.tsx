@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { CasesService, type Case } from "@/lib/cases-service"
+import { getAllCases } from "@/server-actions/cases-actions"
 
 export function DashboardCasosPendientes() {
   const [cases, setCases] = useState<Case[]>([])
@@ -68,17 +69,8 @@ export function DashboardCasosPendientes() {
     setError(null)
 
     try {
-      console.log("🔍 Attempting to fetch cases from Python backend...")
-
-      // Fetch from Python service directly instead of CasesService
-      const response = await fetch("http://localhost:8000/prediagnostic/cases")
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const pythonCases = await response.json()
-      console.log("✅ Cases fetched from Python backend:", pythonCases)
+      const pythonCases = await getAllCases()
 
       // Transform Python data to Case interface
       const transformedCases: Case[] = pythonCases.map((item: any) => ({

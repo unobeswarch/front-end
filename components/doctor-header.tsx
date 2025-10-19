@@ -1,6 +1,4 @@
 "use client"
-
-import { useAuth } from "@/components/auth-context"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -13,13 +11,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Activity, LogOut, Settings, User, Stethoscope, FileText } from "lucide-react"
 import Link from "next/link"
+import { logout } from "@/server-actions/auth-actions"
 
-export function DoctorHeader() {
-  const { user, logout } = useAuth()
+interface DoctorHeaderProps {
+  id?: string
+  name: string
+  email: string
+  role: "paciente" | "doctor"
+  avatar?: string
+}
 
-  const handleLogout = () => {
-    logout()
-  }
+
+export function DoctorHeader({ id, name, email, role, avatar }: DoctorHeaderProps) {
 
   return (
     <header className="border-b border-border bg-card">
@@ -54,10 +57,10 @@ export function DoctorHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={user?.avatar || "/doctor-avatar.png"} alt="Doctor" />
+                    <AvatarImage src={avatar || "/doctor-avatar.png"} alt="Doctor" />
                     <AvatarFallback>
-                      {user?.name && typeof user.name === 'string'
-                        ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+                      {name && typeof name === 'string'
+                        ? name.split(" ").map((n) => n[0]).join("").toUpperCase()
                         : "DR"}
                     </AvatarFallback>
                   </Avatar>
@@ -66,9 +69,9 @@ export function DoctorHeader() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name || "Dr. Sarah Johnson"}</p>
+                    <p className="text-sm font-medium leading-none">{name || "Dr. Sarah Johnson"}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email || "sarah.johnson@hospital.com"}
+                      {email || "sarah.johnson@hospital.com"}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -95,10 +98,11 @@ export function DoctorHeader() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="md:hidden" />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
+                <form action={logout}>
+                  <Button type="submit" variant="ghost">
+                    Cerrar sesión
+                  </Button>
+                </form>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
