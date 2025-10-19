@@ -15,6 +15,7 @@ import { PreDiagnosticService } from "@/lib/prediagnostic-service"
 import { DiagnosticService, DiagnosticPayload } from "@/lib/diagnostic-service"
 import { GraphQLClient } from "@/lib/apollo-client"
 import { GET_CASE_DETAIL, GetCaseDetailResponse, CaseDetail } from "@/lib/graphql-queries"
+import { getPreDiagnostic } from "@/server-actions/cases-actions"
 
 // Datos mock SIN fechaProcesamiento para evitar errores
 const mockDetailData: Record<string, any> = {
@@ -95,7 +96,7 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
         
         if (debugResult.success) {
           console.log("✅ Data obtained from backend:", debugResult.data)
-          const backendData = debugResult.data.getPreDiagnostic
+          const backendData = debugResult.data
           
           // Construct the proper image URL
           let imageUrl = `https://via.placeholder.com/400x300/1f2937/ffffff?text=Radiografia+Real+${backendData.pacienteId}`

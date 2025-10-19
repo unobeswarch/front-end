@@ -1,11 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { useAuth } from '@/components/auth-context'
-import { GraphQLClient } from '@/lib/apollo-client'
+import { redirect } from 'next/navigation'
+import { getUserFromToken } from '@/server-actions/auth-actions'
 
 // GraphQL Query específica para HU7
 const GET_CASE_DETAIL = `
@@ -77,82 +73,14 @@ interface CaseDetail {
 
 interface GetCaseDetailResponse {
   caseDetail: CaseDetail
+  name: string
 }
 
 interface RadiographDetailHU7Props {
   caseId: string
 }
 
-export function RadiographDetailHU7({ caseId }: RadiographDetailHU7Props) {
-  const { user } = useAuth()
-  const [data, setData] = useState<GetCaseDetailResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function fetchCaseDetail() {
-      // Solo ejecutar si hay usuario autenticado y es paciente
-      if (!user || user.role !== 'paciente') {
-        setLoading(false)
-        setError('Usuario no autorizado')
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError(null)
-        
-        const result = await GraphQLClient.query<GetCaseDetailResponse>(
-          GET_CASE_DETAIL,
-          { id: caseId }
-        )
-        
-        setData(result)
-      } catch (err) {
-        console.error('Error fetching case detail:', err)
-        setError(err instanceof Error ? err.message : 'Error desconocido')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCaseDetail()
-  }, [caseId, user])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Cargando detalles de la radiografía...</p>
-        </div>
-      </div>
-    )
-  }
-  
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-red-50 p-8 rounded-lg border border-red-200 max-w-md">
-          <div className="text-red-600 text-xl font-semibold mb-4">Error</div>
-          <p className="text-red-700">{error}</p>
-        </div>
-      </div>
-    )
-  }
-  
-  if (!data?.caseDetail) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-yellow-50 p-8 rounded-lg border border-yellow-200 max-w-md">
-          <div className="text-yellow-600 text-xl font-semibold mb-4">No encontrado</div>
-          <p className="text-yellow-700">Radiografía no encontrada</p>
-        </div>
-      </div>
-    )
-  }
-
-  const { caseDetail } = data
+export async function RadiographDetailHU7({ caseDetail, name }: GetCaseDetailResponse) {
 
   return (
     <div className="h-[80vh] bg-gray-50 overflow-hidden rounded-lg">
@@ -214,7 +142,7 @@ export function RadiographDetailHU7({ caseId }: RadiographDetailHU7Props) {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500">Nombre</span>
-                  <span className="text-sm font-medium text-gray-900">{user?.name || 'Paciente'}</span>
+                  <span className="text-sm font-medium text-gray-900">{name || 'Paciente'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500">ID Paciente</span>
