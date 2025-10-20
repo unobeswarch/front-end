@@ -73,7 +73,11 @@ export default async function RadiographDetailPage({ params }: RadiographDetailP
         </div>
 
         {/* HU7 Component */}
-        <RadiographDetailHU7 caseDetail={caseDetail} name={currentUser.name}/>
+        <RadiographDetailHU7 
+          caseDetail={caseDetail} 
+          name={currentUser.name}
+          userAge={currentUser.age || 'No disponible'}
+        />
         
       </main>
     </div>

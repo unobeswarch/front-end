@@ -102,10 +102,28 @@ const GET_PATIENT_CASES = `
 
 export default function PatientDashboardClient({ currentUser, records }: PatientDashboardClientProps) {
   const router = useRouter()
-  const [localRecords, setLocalRecords] = useState<RadiographyRecord[]>(records)
+  
+  // Sort records by upload date (most recent first)
+  const sortedRecords = [...records].sort((a, b) => 
+    new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+  )
+  
+  const [localRecords, setLocalRecords] = useState<RadiographyRecord[]>(sortedRecords)
+
+  // Helper function to convert status from English to Spanish
+  const getSpanishStatus = (status: "uploaded" | "processed" | "validated"): "subido" | "procesado" | "validado" => {
+    if (status === "validated") return "validado"
+    if (status === "processed") return "procesado"
+    return "subido"
+  }
 
   const handleUploadSuccess = (newRecord: RadiographyRecord) => {
-    setLocalRecords([newRecord, ...localRecords])
+    const updatedRecords = [newRecord, ...localRecords]
+    // Re-sort after adding new record to maintain chronological order
+    const newSortedRecords = updatedRecords.sort((a, b) => 
+      new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+    )
+    setLocalRecords(newSortedRecords)
   }
 
   const handleViewDetails = (id: string) => {
@@ -146,7 +164,7 @@ export default function PatientDashboardClient({ currentUser, records }: Patient
                     <FileImage className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-card-foreground">{records.length}</div>
+                    <div className="text-2xl font-bold text-card-foreground">{sortedRecords.length}</div>
                     <p className="text-xs text-muted-foreground">Radiografías</p>
                   </CardContent>
                 </Card>
@@ -158,7 +176,7 @@ export default function PatientDashboardClient({ currentUser, records }: Patient
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-card-foreground">
-                      {records.filter((r) => r.status === "validated").length}
+                      {sortedRecords.filter((r) => r.status === "validated").length}
                     </div>
                     <p className="text-xs text-muted-foreground">Aprobados por un doctor</p>
                   </CardContent>
@@ -171,7 +189,7 @@ export default function PatientDashboardClient({ currentUser, records }: Patient
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-card-foreground">
-                      {records.filter((r) => r.status !== "validated").length}
+                      {sortedRecords.filter((r) => r.status !== "validated").length}
                     </div>
                     <p className="text-xs text-muted-foreground">En espera de revisión</p>
                   </CardContent>
@@ -188,7 +206,7 @@ export default function PatientDashboardClient({ currentUser, records }: Patient
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {records.slice(0, 3).map((record) => (
+                    {sortedRecords.slice(0, 3).map((record) => (
                       <div
                         key={record.id}
                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent cursor-pointer transition-colors"
@@ -233,13 +251,13 @@ export default function PatientDashboardClient({ currentUser, records }: Patient
                                   : "outline"
                             }
                           >
-                            {record.status}
+                            {getSpanishStatus(record.status)}
                           </Badge>
                           <Eye className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
                     ))}
-                    {records.length === 0 && (
+                    {sortedRecords.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No hay registros disponibles
                       </div>
@@ -257,11 +275,10 @@ export default function PatientDashboardClient({ currentUser, records }: Patient
           <TabsContent value="history">
             {(
               <RadiographyHistory 
-                records={records.map(record => ({
+                records={sortedRecords.map(record => ({
                   radiografia_id: record.id,
                   fecha_subida: record.uploadDate,
-                  estado: record.status === "validated" ? "validado" : 
-                         record.status === "processed" ? "procesado" : "subido",
+                  estado: getSpanishStatus(record.status),
                   resultado_preliminar: record.aiDiagnosis,
                   imageUrl: record.imageUrl
                 }))} 

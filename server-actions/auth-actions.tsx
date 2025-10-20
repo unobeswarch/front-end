@@ -6,6 +6,7 @@ interface User {
   email: string
   role: "paciente" | "doctor"
   avatar?: string
+  age?: string | number
 }
 
 import { redirect } from "next/navigation"
@@ -105,6 +106,8 @@ export async function getUserFromToken() {
 
   const data = await res.json();
 
+  console.log("📥 UserInfo response:", data);  // Debug log
+
   const avatarUrl =
     data.rol === "paciente"
       ? `http://localhost:8081/userImage?id=${user_id}`
@@ -116,5 +119,6 @@ export async function getUserFromToken() {
     email: data.email,
     role: data.rol,
     avatar: avatarUrl,
+    age: data.edad || data.age || undefined, // Intentar obtener la edad del backend
   };
 }

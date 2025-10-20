@@ -40,13 +40,13 @@ const GET_CASE_DETAIL = `
 interface ResultadosModelo {
   probNeumonia: number
   etiqueta: string
-  fechaProcesamiento: string
+  fechaProcesamiento?: string // Hacer opcional
 }
 
 interface PreDiagnostic {
   prediagnostic_id: string
   pacienteId: string
-  urlrad: string
+  urlrad?: string // Hacer opcional para evitar conflictos de tipos
   estado: string
   resultadosModelo: ResultadosModelo
   fechaSubida: string
@@ -77,10 +77,12 @@ interface GetCaseDetailResponse {
 }
 
 interface RadiographDetailHU7Props {
-  caseId: string
+  caseDetail: CaseDetail
+  name: string
+  userAge?: string | number  // Añadir age como prop opcional
 }
 
-export async function RadiographDetailHU7({ caseDetail, name }: GetCaseDetailResponse) {
+export function RadiographDetailHU7({ caseDetail, name, userAge }: RadiographDetailHU7Props) {
 
   return (
     <div className="h-[80vh] bg-gray-50 overflow-hidden rounded-lg">
@@ -149,12 +151,8 @@ export async function RadiographDetailHU7({ caseDetail, name }: GetCaseDetailRes
                   <span className="text-sm font-medium text-gray-900">{caseDetail.preDiagnostic.pacienteId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Fecha de Nacimiento</span>
-                  <span className="text-sm font-medium text-gray-900">25 de Agosto, 1985</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Sexo</span>
-                  <span className="text-sm font-medium text-gray-900">Femenino</span>
+                  <span className="text-sm text-gray-500">Edad</span>
+                  <span className="text-sm font-medium text-gray-900">{userAge || 'No disponible'}</span>
                 </div>
               </div>
             </div>
@@ -164,13 +162,17 @@ export async function RadiographDetailHU7({ caseDetail, name }: GetCaseDetailRes
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Detalles del Diagnóstico</h2>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Fecha de Radiografía</span>
+                  <span className="text-sm text-gray-500">Fecha de Subida</span>
                   <span className="text-sm font-medium text-gray-900">{formatDate(caseDetail.fechaSubida)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500">Fecha de Diagnóstico</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {caseDetail.diagnostic ? formatDate(caseDetail.diagnostic.fechaRevision) : 'Pendiente'}
+                    {caseDetail.diagnostic?.fechaRevision ? 
+                      formatDate(caseDetail.diagnostic.fechaRevision) : 
+                      (caseDetail.preDiagnostic.estado?.toLowerCase() === 'validado' ? 
+                        formatDate(caseDetail.preDiagnostic.resultadosModelo.fechaProcesamiento || caseDetail.fechaSubida) : 
+                        'Pendiente')}
                   </span>
                 </div>
               </div>
@@ -227,21 +229,85 @@ export async function RadiographDetailHU7({ caseDetail, name }: GetCaseDetailRes
               </div>
             </div>
 
-            {/* Medical Comments Section */}
-            {caseDetail.diagnostic && (
-              <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">Comentarios del Médico</h2>
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <p className="text-gray-700 italic leading-relaxed text-sm mb-4">
-                    "{caseDetail.diagnostic.comentarios}"
-                  </p>
-                  <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-200">
-                    <span className="font-medium">- {caseDetail.diagnostic.doctorNombre || 'Dr. Carlos Vega'}</span>
-                    <span>{formatDate(caseDetail.diagnostic.fechaRevision)}</span>
+            {/* Doctor Diagnosis Information */}
+            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Diagnóstico Médico</h2>
+              {caseDetail.diagnostic ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Doctor</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {caseDetail.diagnostic.doctorNombre || 'No especificado'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Estado de Aprobación</span>
+                    <span className={`text-sm font-medium ${
+                      caseDetail.diagnostic.aprobacion?.toLowerCase() === 'aprobado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'si'
+                        ? 'text-green-600'
+                        : caseDetail.diagnostic.aprobacion?.toLowerCase() === 'rechazado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'no' 
+                        ? 'text-red-600'
+                        : 'text-gray-900'
+                    }`}>
+                      {caseDetail.diagnostic.aprobacion === 'aprobado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'si' 
+                        ? 'Aprobado' 
+                        : caseDetail.diagnostic.aprobacion === 'rechazado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'no'
+                        ? 'No Aprobado'
+                        : caseDetail.diagnostic.aprobacion || 'No especificado'}
+                    </span>
+                  </div>
+                  <div className="pt-2">
+                    <span className="text-sm text-gray-500 block mb-1">Comentarios</span>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {caseDetail.diagnostic.comentarios || 'Sin comentarios adicionales'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              ) : caseDetail.preDiagnostic.estado?.toLowerCase() === 'validado' ? (
+                <div className="space-y-3">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium text-green-800">Caso validado por un médico</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Estado</span>
+                    <span className="text-sm font-medium text-green-600">Validado</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Fecha de Validación</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {formatDate(caseDetail.preDiagnostic.resultadosModelo.fechaProcesamiento || caseDetail.fechaSubida)}
+                    </span>
+                  </div>
+                  <div className="pt-2">
+                    <span className="text-sm text-gray-500 block mb-1">Información</span>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        Este caso ha sido revisado y validado por un médico. El diagnóstico por IA ha sido confirmado como correcto.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-gray-400 mb-2">
+                    <svg className="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-500">Diagnóstico médico pendiente</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Un doctor revisará este caso próximamente
+                  </p>
+                </div>
+              )}
+            </div>
             </div>
           </div>
         </div>
