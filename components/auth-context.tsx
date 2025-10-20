@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (hasToken && userRole) {
       const token = document.cookie.split("; ").find(row => row.startsWith("auth-token="))?.split("=")[1]
 
-       fetch("http://localhost:8081/validation", {
+       fetch("http://localhost:3001/api/v1/auth/validation", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .then(async data => {
           let avatarUrl = null
           try {
-            const imageResponse = await fetch(`http://localhost:8081/userImage?id=${data.UserID}`, {
+            const imageResponse = await fetch(`http://localhost:3001/api/v1/auth/userImage?id=${data.UserID}`, {
               headers: { Authorization: `Bearer ${token}` },
             })
             if (imageResponse.ok) {
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-    const response = await fetch("http://localhost:8081/auth", {
+    const response = await fetch("http://localhost:3001/api/v1/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo, contrasena }),
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.cookie = `auth-token=${data.token}; path=/`
     document.cookie = `user-role=${data.rol}; path=/`
 
-    const imageResponse = await fetch(`http://localhost:8081/userImage?id=${data.user_id}`, {
+    const imageResponse = await fetch(`http://localhost:3001/api/v1/auth/userImage?id=${data.user_id}`, {
       headers: { "Authorization": `Bearer ${data.token}` },
     })
 
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-      const responseRegister = await fetch("http://localhost:8081/register", {
+      const responseRegister = await fetch("http://localhost:3001/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
