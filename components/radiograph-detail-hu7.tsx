@@ -94,7 +94,7 @@ export async function RadiographDetailHU7({ caseDetail, name }: GetCaseDetailRes
               <div className="h-full bg-black flex items-center justify-center">
                 {caseDetail.urlImagen ? (
                   <img 
-                    src={caseDetail.urlImagen ? `http://localhost:8000/prediagnostic/image/${caseDetail.urlImagen.split('/').pop()}` : undefined}
+                    src={caseDetail.urlImagen ? `http://localhost:3001/api/v1/prediagnostic/image/${caseDetail.urlImagen.split('/').pop()}` : undefined}
                     alt="Radiografía pulmonar"
                     className="max-w-full max-h-full object-contain"
                     onError={(e) => {

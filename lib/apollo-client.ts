@@ -1,7 +1,7 @@
-// Cliente GraphQL simple usando fetch API
-// Conecta directamente al backend ya que CORS está habilitado
+// Cliente GraphQL para usar API Gateway como punto único de entrada
+// Todas las consultas GraphQL pasan por el API Gateway
 
-const GRAPHQL_URL = 'http://localhost:8080/query'; // URL CORRECTA!
+const GRAPHQL_URL = 'http://localhost:3001/api/v1/business/query'; // API Gateway endpoint
 
 export class GraphQLClient {
   static async query<T = any>(query: string, variables?: any, token?: string): Promise<T> {
@@ -65,7 +65,7 @@ export class GraphQLClient {
       
       // Si es un error de red, dar más detalles
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        console.error('🌐 Error de conexión: ¿Está corriendo el backend en localhost:8080?');
+        console.error('🌐 Error de conexión: ¿Está corriendo el API Gateway en localhost:3001?');
       }
       
       throw error;

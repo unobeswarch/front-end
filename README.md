@@ -27,11 +27,27 @@ Medical diagnostic functionality allowing doctors to approve/reject AI model res
 **Interface implemented:**
 - Approval/rejection checkboxes for AI diagnosis
 - Medical comment field with validation (min 10 chars)
-- GraphQL integration with createDiagnostic mutation
+- GraphQL integration with createDiagnostic mutation through API Gateway
 - Toast notifications and automatic redirection to pending cases
 - Robust error handling with development fallback
+- **✅ Fully integrated with API Gateway architecture**
 
 **Access:** `/doctor/cases/{prediagnostic_id}`
+
+### 🔗 API Gateway Integration
+
+All frontend services now consume the API Gateway as the single entry point:
+
+**API Gateway Endpoints:**
+- **Authentication:** `http://localhost:3001/api/v1/auth/*`
+- **Business Logic:** `http://localhost:3001/api/v1/business/*` 
+- **Prediagnostic:** `http://localhost:3001/api/v1/prediagnostic/*`
+
+**Architecture:**
+- ✅ SSR-compatible implementation
+- ✅ No direct backend service calls
+- ✅ Centralized authentication through gateway
+- ✅ Unified error handling and logging
 
 ## Learn More
 

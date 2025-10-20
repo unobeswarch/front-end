@@ -1,5 +1,5 @@
-// Service for handling REST API calls to /businesslogic/cases endpoint
-// Following the existing pattern from PreDiagnosticService but for REST instead of GraphQL
+// Service for handling REST API calls through API Gateway
+// All business logic requests go through the API Gateway
 
 export interface Case {
   id: string
@@ -15,18 +15,18 @@ export interface Case {
 }
 
 export class CasesService {
-  private static readonly BASE_URL = "http://localhost:8080"
+  private static readonly API_GATEWAY_URL = "http://localhost:3001/api/v1"
 
   /**
-   * Fetches all pending cases from the backend
+   * Fetches all pending cases from the backend through API Gateway
    * @returns Promise with array of cases
    */
   static async getCases(): Promise<Case[]> {
-    console.log("🚀 Fetching cases from /businesslogic/cases...")
-    console.log(`🔗 URL: ${this.BASE_URL}/businesslogic/cases`)
+    console.log("🚀 Fetching cases through API Gateway...")
+    console.log(`🔗 URL: ${this.API_GATEWAY_URL}/business/cases`)
 
     try {
-      const response = await fetch(`${this.BASE_URL}/businesslogic/cases`, {
+      const response = await fetch(`${this.API_GATEWAY_URL}/business/cases`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export class CasesService {
 
       // Network error details
       if (error instanceof TypeError && error.message.includes("fetch")) {
-        console.error("🌐 Network error: Is the backend running on localhost:8080?")
+        console.error("🌐 Network error: Is the API Gateway running on localhost:3001?")
       }
 
       throw new Error("No se pudieron obtener los casos. Verifica tu conexión.")
@@ -62,17 +62,17 @@ export class CasesService {
   }
 
   /**
-   * Debug method to test the connection to the cases endpoint
+   * Debug method to test the connection to the API Gateway cases endpoint
    * @returns Promise with debug information
    */
   static async debugConnection(): Promise<any> {
-    console.log("🔍 DEBUG: Testing connection to /businesslogic/cases")
-    console.log(`🔗 DEBUG: URL: ${this.BASE_URL}/businesslogic/cases`)
+    console.log("🔍 DEBUG: Testing connection to API Gateway /business/cases")
+    console.log(`🔗 DEBUG: URL: ${this.API_GATEWAY_URL}/business/cases`)
 
     try {
       const startTime = performance.now()
 
-      const response = await fetch(`${this.BASE_URL}/businesslogic/cases`, {
+      const response = await fetch(`${this.API_GATEWAY_URL}/business/cases`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

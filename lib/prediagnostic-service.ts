@@ -11,7 +11,7 @@ export class PreDiagnosticService {
 
   static async debugConnection(id: string): Promise<any> {
     console.log(`🔍 DEBUG: Intentando conectar con backend para ID: ${id}`);
-    console.log(`🔗 DEBUG: URL del GraphQL Client:`, 'http://localhost:8080/query');
+    console.log(`🔗 DEBUG: URL del API Gateway:`, 'http://localhost:3001/api/v1/business/query');
     
     try {
       console.log(`📝 DEBUG: Query que se enviará:`, GET_PREDIAGNOSTIC);

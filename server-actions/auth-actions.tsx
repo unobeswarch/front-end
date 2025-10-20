@@ -13,7 +13,7 @@ import { cookies } from "next/headers"
 
 export async function register(userData: any) {
     try {
-      const responseRegister = await fetch("http://localhost:8081/register", {
+      const responseRegister = await fetch("http://localhost:3001/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -49,7 +49,7 @@ export async function login(formData: FormData): Promise<void> {
   console.log(correo)
   console.log(contrasena)
 
-  const response = await fetch("http://localhost:8081/auth", {
+  const response = await fetch("http://localhost:3001/api/v1/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ correo, contrasena }),
@@ -93,7 +93,7 @@ export async function getUserFromToken() {
 
   if (!token || !user_id) return null;
 
-  const res = await fetch("http://localhost:8081/userInfo", {
+  const res = await fetch("http://localhost:3001/api/v1/auth/userInfo", {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -107,7 +107,7 @@ export async function getUserFromToken() {
 
   const avatarUrl =
     data.rol === "paciente"
-      ? `http://localhost:8081/userImage?id=${user_id}`
+      ? `http://localhost:3001/api/v1/auth/userImage?id=${user_id}`
       : "/doctor-avatar.png";
 
   return {

@@ -105,8 +105,8 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
             const pathParts = backendData.urlrad.split(/[\\/]/) // divide por '/' o '\'
             const filename = pathParts[pathParts.length - 1]  // solo RAD-xxxx.jpg
 
-            // URL correcta hacia FastAPI
-            imageUrl = `http://localhost:8000/prediagnostic/image/${filename}`
+            // URL correcta hacia API Gateway
+            imageUrl = `http://localhost:3001/api/v1/prediagnostic/image/${filename}`
             console.log(`🖼️ Imagen URL final: ${imageUrl}`)
           }
           

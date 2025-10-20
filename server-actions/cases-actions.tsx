@@ -94,7 +94,7 @@ export async function getCaseDetail(id: string, token: string): Promise<GetCaseD
 
 export async function getAllCases(){
   try {
-    const response = await fetch("http://localhost:8000/prediagnostic/cases")
+    const response = await fetch("http://localhost:3001/api/v1/prediagnostic/cases")
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -162,7 +162,7 @@ export async function UploadRadiographyImage(formData: FormData) {
   }
 
   try {
-    const response = await fetch("http://localhost:8080/query", {
+    const response = await fetch("http://localhost:3001/api/v1/business/query", {
       method: "POST",
       body: formData,
       headers: {
