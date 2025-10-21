@@ -106,8 +106,9 @@ export default async function PatientDashboard() {
     
     // Properly type the status field
     const getStatus = (estado: string): "uploaded" | "processed" | "validated" => {
-      if (estado === "procesado") return "processed"
-      if (estado === "validado") return "validated"
+      const normalizedEstado = estado?.toLowerCase()
+      if (normalizedEstado === "procesado") return "processed"
+      if (normalizedEstado === "validado") return "validated"
       return "uploaded"
     }
     
@@ -115,7 +116,7 @@ export default async function PatientDashboard() {
       id: backendCase.id || "unknown",
       uploadDate: backendCase.fechaSubida || new Date().toISOString(),
       processedDate: backendCase.resultados?.fechaProcesamiento || null,
-      validatedDate: backendCase.estado === "validado" ? backendCase.fechaSubida : null,
+      validatedDate: backendCase.estado?.toLowerCase() === "validado" ? backendCase.fechaSubida : null,
       status: getStatus(backendCase.estado || "uploaded"),
       patientId: backendCase.pacienteId || "unknown",
       imageUrl: backendCase.urlRadiografia || "/placeholder.jpg",
