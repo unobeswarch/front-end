@@ -1,9 +1,10 @@
 // Cliente GraphQL simple usando fetch API
 // Conecta directamente al backend ya que CORS está habilitado
+
 const GRAPHQL_URL = 'http://localhost:8080/query'; // URL CORRECTA!
 
 export class GraphQLClient {
-  static async query<T = any>(query: string, variables?: any): Promise<T> {
+  static async query<T = any>(query: string, variables?: any, token?: string): Promise<T> {
     console.log(`🚀 GraphQL Query iniciada...`);
     console.log(`🔗 URL: ${GRAPHQL_URL}`);
     console.log(`📝 Query:`, query);
@@ -18,9 +19,6 @@ export class GraphQLClient {
       console.log(`📤 Enviando request:`, requestBody);
       
       // Obtener token JWT de las cookies para autenticación
-      const token = typeof document !== 'undefined' 
-        ? document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1]
-        : null;
 
       const headers: HeadersInit = {
         'Content-Type': 'application/json',

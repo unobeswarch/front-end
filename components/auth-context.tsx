@@ -22,6 +22,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const hasToken = document.cookie.includes("auth-token")
     const userRole = document.cookie.includes("user-role=paciente")
+
       ? "paciente"
       : document.cookie.includes("user-role=doctor")
         ? "doctor"
@@ -37,24 +39,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (hasToken && userRole) {
       const token = document.cookie.split("; ").find(row => row.startsWith("auth-token="))?.split("=")[1]
 
-       fetch("http://localhost:8080/validation", {
-        method: "GET",
+       fetch("http://localhost:8081/validation", {
+        method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ required_role: userRole }),
       })
         .then(res => {
           if (!res.ok) throw new Error("Token inválido o expirado")
           return res.json()
         })
-        .then(data => {
+        .then(async data => {
+          let avatarUrl = null
+          try {
+            const imageResponse = await fetch(`http://localhost:8081/userImage?id=${data.UserID}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob()
+              avatarUrl = URL.createObjectURL(blob)
+            }
+          } catch (error) {
+            console.warn("No se pudo cargar la imagen del usuario, usando avatar por defecto")
+          }
+
           setUser({
             id: data.UserID,
             name: data.Name,
             email: data.Email,
             role: data.Role,
-            avatar: data.Role === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
+            avatar: avatarUrl || (data.Role === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png"),
         })
       })
       .catch(err => {
@@ -67,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-    const response = await fetch("http://localhost:8080/auth", {
+    const response = await fetch("http://localhost:8081/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo, contrasena }),
@@ -79,24 +95,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await response.json()
+    console.log("🔍 Auth response data:", data)
+    document.cookie = `auth-token=${data.token}; path=/`
+    document.cookie = `user-role=${data.rol}; path=/`
 
-      const userData = {
-        id: data.id,
-        email: correo,
-        name: data.nombre,
-        role: data.rol,
-        avatar: data.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png",
-      }
+    const imageResponse = await fetch(`http://localhost:8081/userImage?id=${data.user_id}`, {
+      headers: { "Authorization": `Bearer ${data.token}` },
+    })
 
-      setUser(userData)
+    let avatarUrl = null
+    if (imageResponse.ok) {
+      const blob = await imageResponse.blob()
+      avatarUrl = URL.createObjectURL(blob)
+    }
 
-      document.cookie = `auth-token=${data.token}; path=/`
-      document.cookie = `user-role=${data.rol}; path=/`
+    const userData = {
+      id: data.user_id,
+      email: correo,
+      name: data.nombre.toString(),
+      role: data.rol,
+      avatar: avatarUrl || (data.rol === "paciente" ? "/patient-avatar.png" : "/doctor-avatar.png"),
+    }
 
-      setIsLoading(false)
-      return userData
+    setUser(userData)
+    setIsLoading(false)
+    return userData
 
-    } catch(error) {
+    } catch (error) {
+      console.error("Error en login:", error)
       setIsLoading(false)
       return null
     }
@@ -106,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-      const responseRegister = await fetch("http://localhost:8080/register", {
+      const responseRegister = await fetch("http://localhost:8081/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),

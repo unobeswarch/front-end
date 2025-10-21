@@ -13,6 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { PreDiagnosticService } from "@/lib/prediagnostic-service"
 import { DiagnosticService, DiagnosticPayload } from "@/lib/diagnostic-service"
+import { GraphQLClient } from "@/lib/apollo-client"
+import { GET_CASE_DETAIL, GetCaseDetailResponse, CaseDetail } from "@/lib/graphql-queries"
+import { getPreDiagnostic } from "@/server-actions/cases-actions"
 
 // Datos mock SIN fechaProcesamiento para evitar errores
 const mockDetailData: Record<string, any> = {
@@ -86,21 +89,32 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
       setLoading(true)
       
       try {
-        // PRIMERO: Intentar obtener datos del backend real
-        console.log(`🔍 Intentando obtener datos del backend para ID: ${prediagnosticId}`)
+        // Use the working getPreDiagnostic query
+        console.log(`🔍 Fetching prediagnostic data for ID: ${prediagnosticId}`)
         
         const debugResult = await PreDiagnosticService.debugConnection(prediagnosticId)
         
         if (debugResult.success) {
-          // Si llegamos aquí, el backend respondió correctamente
-          console.log("✅ Datos obtenidos del backend:", debugResult.data)
-          const backendData = debugResult.data.getPreDiagnostic
+          console.log("✅ Data obtained from backend:", debugResult.data)
+          const backendData = debugResult.data
+          
+          // Construct the proper image URL
+          let imageUrl = `https://via.placeholder.com/400x300/1f2937/ffffff?text=Radiografia+Real+${backendData.pacienteId}`
+          if (backendData.urlrad) {
+            // Extrae el nombre del archivo, sin carpetas
+            const pathParts = backendData.urlrad.split(/[\\/]/) // divide por '/' o '\'
+            const filename = pathParts[pathParts.length - 1]  // solo RAD-xxxx.jpg
+
+            // URL correcta hacia FastAPI
+            imageUrl = `http://localhost:8000/prediagnostic/image/${filename}`
+            console.log(`🖼️ Imagen URL final: ${imageUrl}`)
+          }
           
           setData({
             ...backendData,
-            // Agregar datos adicionales para completar la vista
+            // Additional display data
             radiografia: {
-              url: backendData.urlrad || `https://via.placeholder.com/400x300/1f2937/ffffff?text=Radiografia+Real+${backendData.pacienteId}`,
+              url: imageUrl,
               fechaCaptura: backendData.fechaSubida,
               observaciones: `Estado: ${backendData.estado}`
             },
@@ -112,12 +126,12 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
           })
           setIsUsingMockData(false)
         } else {
-          throw new Error(debugResult.error || 'Error de conexión')
+          throw new Error(debugResult.error || 'Connection error')
         }
         
       } catch (error) {
-        // FALLBACK: Si el backend falla, usar datos mock
-        console.log("⚠️ Backend no disponible, usando datos mock:", error)
+        // FALLBACK: If the backend fails, use mock data
+        console.log("⚠️ Backend not available, using mock data:", error)
         const mockData = mockDetailData[prediagnosticId]
         
         if (mockData) {
@@ -178,16 +192,31 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
     })
   }
 
-  const getProbabilityColor = (prob: number) => {
-    if (prob >= 0.8) return "text-red-600"
-    if (prob >= 0.5) return "text-yellow-600"
+  const getProbabilityColor = (label: string) => {
+    const lowerLabel = label.toLowerCase()
+    // Check for "no pneumonia" patterns first
+    if (lowerLabel.includes("no neumonía") || lowerLabel.includes("no pneumonia") || lowerLabel.includes("normal")) return "text-green-600"
+    // Then check for pneumonia
+    if (lowerLabel.includes("neumonía") || lowerLabel.includes("pneumonia")) return "text-red-600"
     return "text-green-600"
   }
 
-  const getProbabilityBadgeVariant = (prob: number) => {
-    if (prob >= 0.8) return "destructive"
-    if (prob >= 0.5) return "outline"
+  const getProbabilityBadgeVariant = (label: string) => {
+    const lowerLabel = label.toLowerCase()
+    // Check for "no pneumonia" patterns first
+    if (lowerLabel.includes("no neumonía") || lowerLabel.includes("no pneumonia") || lowerLabel.includes("normal")) return "secondary"
+    // Then check for pneumonia
+    if (lowerLabel.includes("neumonía") || lowerLabel.includes("pneumonia")) return "destructive"
     return "secondary"
+  }
+
+  const getProgressBarColor = (label: string) => {
+    const lowerLabel = label.toLowerCase()
+    // Check for "no pneumonia" patterns first
+    if (lowerLabel.includes("no neumonía") || lowerLabel.includes("no pneumonia") || lowerLabel.includes("normal")) return "bg-green-500"
+    // Then check for pneumonia
+    if (lowerLabel.includes("neumonía") || lowerLabel.includes("pneumonia")) return "bg-red-500"
+    return "bg-green-500"
   }
 
   // Función para validar y enviar el diagnóstico
@@ -380,23 +409,20 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">Probabilidad de Neumonía</h4>
+                <h4 className="font-medium text-gray-900 mb-3">Porcentaje de certeza del modelo</h4>
                 <div className="flex items-center space-x-3">
                   <div className="flex-1 bg-gray-200 rounded-full h-3">
                     <div 
-                      className={`h-3 rounded-full ${
-                        data.resultadosModelo.probNeumonia >= 0.8 ? 'bg-red-500' :
-                        data.resultadosModelo.probNeumonia >= 0.5 ? 'bg-yellow-500' : 'bg-green-500'
-                      }`}
+                      className={`h-3 rounded-full ${getProgressBarColor(data.resultadosModelo.etiqueta)}`}
                       style={{ width: `${data.resultadosModelo.probNeumonia * 100}%` }}
                     />
                   </div>
-                  <span className={`font-bold text-lg ${getProbabilityColor(data.resultadosModelo.probNeumonia)}`}>
+                  <span className={`font-bold text-lg ${getProbabilityColor(data.resultadosModelo.etiqueta)}`}>
                     {(data.resultadosModelo.probNeumonia * 100).toFixed(1)}%
                   </span>
                 </div>
                 <Badge 
-                  variant={getProbabilityBadgeVariant(data.resultadosModelo.probNeumonia)}
+                  variant={getProbabilityBadgeVariant(data.resultadosModelo.etiqueta)}
                   className="mt-2"
                 >
                   {data.resultadosModelo.etiqueta}

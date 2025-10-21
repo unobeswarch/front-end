@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Upload, FileImage, X } from "lucide-react"
+import { UploadRadiographyImage } from "@/server-actions/cases-actions"
 
 interface UploadRadiographyProps {
   onUploadSuccess: (record: any) => void
@@ -75,19 +76,9 @@ export function UploadRadiography({ onUploadSuccess }: UploadRadiographyProps) {
       formData.append("map", JSON.stringify({ "0": ["variables.file"] }))
       formData.append("0", selectedFile)
 
-      const token = document.cookie.split("; ").find((row) => row.startsWith("auth-token="))?.split("=")[1]
+      const response = await UploadRadiographyImage(formData)
 
-      const response = await fetch("http://localhost:8080/query", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }) 
-
-      const result = await response.json()
-
-      if (result.data?.uploadImage) {
+      if (response.data?.uploadImage) {
         alert("Tu radiografia ha sido subida")
       }
     } catch (error) {
