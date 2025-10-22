@@ -123,7 +123,7 @@ export function DashboardCasosPendientes() {
 
   const getBadgeColor = (status: string): string => {
     switch (status.toLowerCase()) {
-      case "procesado":
+      case "validado":
         return "bg-green-100 text-green-800"
       case "pendiente":
         return "bg-yellow-100 text-yellow-800"
@@ -134,7 +134,7 @@ export function DashboardCasosPendientes() {
     }
   }
 
-  const availableCases = cases.filter((c) => getUrgencyLevel(c) !== "urgent")
+  const availableCases = cases.filter((c) => getUrgencyLevel(c) !== "urgent" && c.currentStatus === "procesado")
   const urgentCases = cases.filter((c) => getUrgencyLevel(c) === "urgent")
 
   const CaseCard = ({ case: caseData }: { case: Case }) => {
@@ -161,8 +161,6 @@ export function DashboardCasosPendientes() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <User className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium text-foreground">Paciente: {caseData.patientId}</span>
-              {caseData.patientName && <span className="text-sm text-muted-foreground">({caseData.patientName})</span>}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="w-4 h-4" />
@@ -262,21 +260,8 @@ export function DashboardCasosPendientes() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">{cases.length}</div>
+            <div className="text-2xl font-bold text-card-foreground">{availableCases.length}</div>
             <p className="text-xs text-muted-foreground">Pendientes de revisión</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-card-foreground">Urgentes</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">
-              {cases.filter((c) => CasesService.getUrgencyLevel(c) === "urgent").length}
-            </div>
-            <p className="text-xs text-muted-foreground">Requieren atención inmediata</p>
           </CardContent>
         </Card>
 
@@ -309,40 +294,6 @@ export function DashboardCasosPendientes() {
           ) : (
             <div className="space-y-3">
               {availableCases.map((caseData) => (
-                <CaseCard key={caseData.id} case={caseData} />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="bg-card border-border border-red-200">
-        <CardHeader>
-          <CardTitle className="text-card-foreground flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            Casos Urgentes
-            <Badge variant="secondary" className="bg-orange-100 text-orange-800 ml-2">
-              <Construction className="w-3 h-3 mr-1" />
-              En Desarrollo
-            </Badge>
-          </CardTitle>
-          <CardDescription>
-            Casos que requieren atención médica inmediata
-            <span className="block text-orange-600 text-sm mt-1">
-              * La clasificación automática de urgencia está en desarrollo
-            </span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {urgentCases.length === 0 ? (
-            <div className="text-center py-8">
-              <AlertTriangle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No hay casos urgentes</p>
-              <p className="text-sm text-orange-600 mt-2">La IA aún no clasifica casos como urgentes automáticamente</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {urgentCases.map((caseData) => (
                 <CaseCard key={caseData.id} case={caseData} />
               ))}
             </div>

@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { getCaseDetail } from '@/server-actions/cases-actions'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
+import { getDiagnostic } from '@/server-actions/cases-actions'
 
 interface RadiographDetailPageProps {
   params: { id: string }
@@ -41,6 +42,7 @@ export default async function RadiographDetailPage({ params }: RadiographDetailP
     redirect("/patient/dashboard")
   }
 
+  const diagnostic = await getDiagnostic(caseDetail.id)
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,6 +76,7 @@ export default async function RadiographDetailPage({ params }: RadiographDetailP
 
         {/* HU7 Component */}
         <RadiographDetailHU7 
+          diagnostic = {diagnostic}
           caseDetail={caseDetail} 
           name={currentUser.name}
           userAge={currentUser.age || 'No disponible'}

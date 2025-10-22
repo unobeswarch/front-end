@@ -106,7 +106,7 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
             const filename = pathParts[pathParts.length - 1]  // solo RAD-xxxx.jpg
 
             // URL correcta hacia FastAPI
-            imageUrl = `http://localhost:8000/prediagnostic/image/${filename}`
+            imageUrl = `http://localhost:8080/prediagnostic/image/${filename}`
             console.log(`🖼️ Imagen URL final: ${imageUrl}`)
           }
           
@@ -119,9 +119,7 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
               observaciones: `Estado: ${backendData.estado}`
             },
             paciente: {
-              nombre: `Paciente ${backendData.pacienteId}`,
-              edad: 45,
-              genero: "No especificado"
+              id: `${backendData.pacienteId}`,
             }
           })
           setIsUsingMockData(false)
@@ -338,18 +336,8 @@ export function PreDiagnosticDetail({ prediagnosticId }: PreDiagnosticDetailProp
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Nombre</p>
-                <p className="font-medium">{data.paciente?.nombre || `Paciente ${data.pacienteId}`}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Edad</p>
-                  <p className="font-medium">{data.paciente?.edad || "No especificada"} años</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Género</p>
-                  <p className="font-medium">{data.paciente?.genero || "No especificado"}</p>
-                </div>
+                <p className="text-sm text-gray-500">Numero de identificacion</p>
+                <p className="font-medium">{data.paciente?.id || `No especificado`}</p>
               </div>
             </CardContent>
           </Card>

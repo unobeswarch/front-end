@@ -58,7 +58,6 @@ interface Diagnostic {
   aprobacion: string
   comentarios: string
   fechaRevision: string
-  doctorNombre?: string
 }
 
 interface CaseDetail {
@@ -77,12 +76,13 @@ interface GetCaseDetailResponse {
 }
 
 interface RadiographDetailHU7Props {
+  diagnostic: any
   caseDetail: CaseDetail
   name: string
   userAge?: string | number  // Añadir age como prop opcional
 }
 
-export function RadiographDetailHU7({ caseDetail, name, userAge }: RadiographDetailHU7Props) {
+export function RadiographDetailHU7({ diagnostic, caseDetail, name, userAge }: RadiographDetailHU7Props) {
 
   return (
     <div className="h-[80vh] bg-gray-50 overflow-hidden rounded-lg">
@@ -96,7 +96,7 @@ export function RadiographDetailHU7({ caseDetail, name, userAge }: RadiographDet
               <div className="h-full bg-black flex items-center justify-center">
                 {caseDetail.urlImagen ? (
                   <img 
-                    src={caseDetail.urlImagen ? `http://localhost:8000/prediagnostic/image/${caseDetail.urlImagen.split('/').pop()}` : undefined}
+                    src={caseDetail.urlImagen ? `http://localhost:8080/prediagnostic/image/${caseDetail.urlImagen.split('/').pop()}` : undefined}
                     alt="Radiografía pulmonar"
                     className="max-w-full max-h-full object-contain"
                     onError={(e) => {
@@ -149,10 +149,6 @@ export function RadiographDetailHU7({ caseDetail, name, userAge }: RadiographDet
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500">ID Paciente</span>
                   <span className="text-sm font-medium text-gray-900">{caseDetail.preDiagnostic.pacienteId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Edad</span>
-                  <span className="text-sm font-medium text-gray-900">{userAge || 'No disponible'}</span>
                 </div>
               </div>
             </div>
@@ -232,35 +228,29 @@ export function RadiographDetailHU7({ caseDetail, name, userAge }: RadiographDet
             {/* Doctor Diagnosis Information */}
             <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Diagnóstico Médico</h2>
-              {caseDetail.diagnostic ? (
+              {diagnostic ? (
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Doctor</span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {caseDetail.diagnostic.doctorNombre || 'No especificado'}
-                    </span>
-                  </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Estado de Aprobación</span>
                     <span className={`text-sm font-medium ${
-                      caseDetail.diagnostic.aprobacion?.toLowerCase() === 'aprobado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'si'
+                      diagnostic.aprobacion === true
                         ? 'text-green-600'
-                        : caseDetail.diagnostic.aprobacion?.toLowerCase() === 'rechazado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'no' 
+                        : diagnostic.aprobacion === false
                         ? 'text-red-600'
                         : 'text-gray-900'
                     }`}>
-                      {caseDetail.diagnostic.aprobacion === 'aprobado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'si' 
+                      {diagnostic.aprobacion === 'aprobado' || diagnostic.aprobacion === true
                         ? 'Aprobado' 
-                        : caseDetail.diagnostic.aprobacion === 'rechazado' || caseDetail.diagnostic.aprobacion?.toLowerCase() === 'no'
+                        : diagnostic.aprobacion === 'rechazado' || diagnostic.aprobacion === false
                         ? 'No Aprobado'
-                        : caseDetail.diagnostic.aprobacion || 'No especificado'}
+                        : diagnostic.aprobacion || 'No especificado'}
                     </span>
                   </div>
                   <div className="pt-2">
                     <span className="text-sm text-gray-500 block mb-1">Comentarios</span>
                     <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                       <p className="text-sm text-gray-700 leading-relaxed">
-                        {caseDetail.diagnostic.comentarios || 'Sin comentarios adicionales'}
+                        {diagnostic.comentarios || 'Sin comentarios adicionales'}
                       </p>
                     </div>
                   </div>

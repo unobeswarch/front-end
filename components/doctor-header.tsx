@@ -57,7 +57,7 @@ export function DoctorHeader({ id, name, email, role, avatar }: DoctorHeaderProp
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={avatar || "/doctor-avatar.png"} alt="Doctor" />
+                    <AvatarImage src={avatar} alt="Doctor" />
                     <AvatarFallback>
                       {name && typeof name === 'string'
                         ? name.split(" ").map((n) => n[0]).join("").toUpperCase()

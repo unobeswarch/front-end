@@ -52,8 +52,11 @@ export default async function DoctorDashboardClient({currentUser, convertedCases
   // Verificar si hay un ID de prueba en la URL - redirigir a página de detalle
 
   // Calculate statistics from real data
+  console.log(convertedCases)
+  console.log(completedCaseDetails)
+
   const pendingCases = convertedCases.filter(c => c.estado === "procesado")
-  const validatedCases = convertedCases.filter(c => c.estado === "validado")
+  const validatedCases = convertedCases.filter(c => c.estado === "Validado")
   const urgentCases = completedCaseDetails.filter(c => c.resultado_modelo?.prob_neumonia > 0.7)
   const routineCases = completedCaseDetails.filter(c => c.resultado_modelo?.prob_neumonia <= 0.7)
 
@@ -125,19 +128,6 @@ export default async function DoctorDashboardClient({currentUser, convertedCases
             <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard del Doctor</h1>
             <p className="text-muted-foreground">Resumen de casos completados y estadísticas generales</p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => (window.location.href = "/connection-test")}
-              className="flex items-center gap-2"
-            >
-              <AlertTriangle className="w-4 h-4" />
-              Test Conexión
-            </Button>
-            <Badge variant="outline" className="text-green-600 border-green-600">
-              🔄 Datos Reales - Backend Conectado
-            </Badge>
-          </div>
         </div>
 
         <div className="space-y-6">
@@ -161,17 +151,6 @@ export default async function DoctorDashboardClient({currentUser, convertedCases
               <CardContent>
                 <div className="text-2xl font-bold text-card-foreground">{validatedCases.length}</div>
                 <p className="text-xs text-muted-foreground">Diagnósticos finalizados</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-card-foreground">Casos Urgentes</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-red-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-card-foreground">{urgentCases.length}</div>
-                <p className="text-xs text-muted-foreground">Prob. neumonía &gt; 70%</p>
               </CardContent>
             </Card>
 
@@ -211,23 +190,6 @@ export default async function DoctorDashboardClient({currentUser, convertedCases
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-card-foreground flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  Casos Completados Recientes
-                </CardTitle>
-                <CardDescription>Últimos casos que has revisado y completado</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RecentCasesSummary CompletedCaseDetails={completedCaseDetails}/>
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Total de casos completados: {validatedCases.length}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className="bg-card border-border">
               <CardHeader>
@@ -249,22 +211,6 @@ export default async function DoctorDashboardClient({currentUser, convertedCases
                     </span>
                   </Button>
                 </Link>
-
-                <Button variant="outline" className="w-full justify-between bg-transparent" disabled>
-                  <span className="flex items-center gap-2">
-                    <FileImage className="h-4 w-4" />
-                    Subir nueva radiografía
-                  </span>
-                  <span className="text-xs text-muted-foreground">Próximamente</span>
-                </Button>
-
-                <Button variant="outline" className="w-full justify-between bg-transparent" disabled>
-                  <span className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Ver estadísticas detalladas
-                  </span>
-                  <span className="text-xs text-muted-foreground">Próximamente</span>
-                </Button>
               </CardContent>
             </Card>
           </div>
