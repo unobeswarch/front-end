@@ -47,8 +47,11 @@ export default async function DoctorDashboard() {
 
   //cases => convertedCases
   //completedCases => CompletedCaseDetails
-
+  console.log("datoooooooooooooos brutos")
+  console.log(response)
   const casesData = response.getCases || []
+  console.log("datoooooooooooooos")
+  console.log(casesData)
   const convertedCases: RealCase[] = casesData.map(case_item => ({
     id: case_item.id,
     paciente: case_item.pacienteNombre,
@@ -73,6 +76,9 @@ export default async function DoctorDashboard() {
       etiqueta: "No disponible"
     }
   }))
+
+  console.log("Converted Cases:", convertedCases)
+  console.log("Completed Case Details:", completedCaseDetails)
 
   return (
     <DoctorDashboardClient

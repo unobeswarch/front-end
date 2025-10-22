@@ -94,7 +94,7 @@ export async function getCaseDetail(id: string, token: string): Promise<GetCaseD
 
 export async function getAllCases(){
   try {
-    const response = await fetch("http://localhost:8000/prediagnostic/cases")
+    const response = await fetch("http://localhost:8080/prediagnostic/cases")
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -177,4 +177,26 @@ export async function UploadRadiographyImage(formData: FormData) {
     throw new Error('No se pudo subir la radiografia. Verifica tu conexión.');
   }
   
+}
+
+export async function getDiagnostic(id:string) {
+  const current_user = await getUserFromToken();
+  const cookieStore = cookies();
+  const token = cookieStore.get("auth-token")?.value;
+
+  if (!current_user) {
+    redirect("/login");
+  }
+  
+  try {
+    const response = await fetch(`http://localhost:8080/prediagnostic/diagnostic/${id}`)
+    const result = await response.json()
+    return result
+    
+  } catch (error) {
+    console.error('Error al obtener el diagnostico:', error);
+    throw new Error('No se pudo obtener el diagnostico.');
+  }
+
+
 }
